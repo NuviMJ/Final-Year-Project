@@ -1,10 +1,4 @@
-"""QoLGuard API — application entry point.
-
-Run locally with:
-    uvicorn app.main:app --reload
-
-Interactive API documentation is served at http://localhost:8000/docs
-"""
+"""QoLGuard API"""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,8 +6,12 @@ from pydantic import BaseModel
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
+from app.services.artifacts import load_bundle
+from app.services.predictor import model_version
 
 settings = get_settings()
+
+load_bundle()
 
 app = FastAPI(
     title=settings.app_name,
@@ -44,6 +42,10 @@ class HealthResponse(BaseModel):
     app: str
     version: str
     environment: str
+    model_loaded: bool
+    model_version: str
+    supported_drugs: int
+    class_order: list[str]
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
@@ -51,13 +53,20 @@ def health() -> HealthResponse:
     """Liveness probe.
 
     The mobile app calls this on startup to confirm it can reach the backend,
-    which turns "wrong base URL" into a clear message instead of a hang.
+    which turns "wrong base URL" into a clear message instead of a hang. It also
+    reports which model is loaded, so a demo can never silently run against the
+    wrong bundle.
     """
+    bundle = load_bundle()
     return HealthResponse(
         status="ok",
         app=settings.app_name,
         version=settings.app_version,
         environment=settings.environment,
+        model_loaded=True,
+        model_version=model_version(bundle),
+        supported_drugs=len(bundle.drugs),
+        class_order=bundle.class_order,
     )
 
 

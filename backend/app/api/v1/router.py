@@ -1,15 +1,8 @@
-"""Aggregates every v1 endpoint router.
-
-Feature routers are mounted here as each stage of ROADMAP.md lands:
-
-    Stage 2  auth        →  /api/v1/auth/*
-    Stage 4  profile     →  /api/v1/profile
-    Stage 4  medications →  /api/v1/medications
-    Stage 6  assessments →  /api/v1/assessments
-    Stage 8  history     →  /api/v1/history
-    Stage 9  education   →  /api/v1/education
-"""
+"""Aggregates every v1 endpoint router."""
 
 from fastapi import APIRouter
 
+from app.api.v1.endpoints import prediction
+
 api_router = APIRouter()
+api_router.include_router(prediction.router)

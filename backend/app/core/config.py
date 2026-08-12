@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     # without JSON quoting. Use `cors_origin_list` to read it.
     cors_origins: str = "*"
 
+    # --- Machine learning ---
+    # Directory holding the frozen bundle exported by the ML training project.
+    # Relative paths resolve against the backend package root, so the service
+    # starts identically from a terminal or from an IDE run configuration.
+    deploy_dir: str = "deploy"
+
     @property
     def cors_origin_list(self) -> list[str]:
         """CORS origins as a list, split from the comma-separated setting."""
