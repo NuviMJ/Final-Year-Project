@@ -1,0 +1,28 @@
+# QoLGuard Backend — Python 3.11+
+# Install:  pip install -r requirements.txt
+#
+# Only packages the code actually imports are listed. Database and
+# authentication dependencies are added when those features are built.
+
+# --- Web framework ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# --- Validation & configuration ---
+pydantic==2.10.5
+pydantic-settings==2.7.1
+
+# --- Machine learning inference ---
+# These versions are not free to change. `preprocessor.joblib` was fitted under
+# scikit-learn 1.9.0; loading it under a different version raises
+# InconsistentVersionWarning and may silently transform features differently,
+# which would invalidate every prediction without any visible error.
+numpy==2.2.1
+scikit-learn==1.9.0
+joblib==1.4.2
+pandas==2.2.3
+xgboost==2.1.3
+
+# --- Testing ---
+pytest==8.3.4
+httpx==0.28.1

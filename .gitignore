@@ -1,12 +1,48 @@
-﻿# IDE
+# ---------- IDE ----------
 .idea/
 .vscode/
+*.iml
 
-# Flutter
-mobile/.dart_tool/
-mobile/build/
-mobile/.flutter-plugins
-mobile/.flutter-plugins-dependencies
-
-# macOS
+# ---------- OS ----------
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Flutter / Dart ----------
+# Flutter generates and maintains mobile/.gitignore, which already covers
+# .dart_tool/, build/, .flutter-plugins* and the Android artefacts. Only the
+# things it misses are listed here.
+mobile/android/local.properties
+mobile/android/key.properties
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+# Note: generated *.g.dart / *.freezed.dart files ARE tracked on purpose,
+# so the project builds without running build_runner first.
+
+# ---------- Python / FastAPI ----------
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---------- Secrets & local data ----------
+.env
+*.env
+!.env.example
+*.db
+*.sqlite
+*.sqlite3
+
+# ---------- ML artifacts ----------
+# backend/deploy/ IS tracked on purpose. It holds the frozen XGBoost bundle
+# exported from the separate ML project, so a fresh clone reproduces the exact
+# model behind the reported evaluation results. The files never change unless
+# the model is retrained, so they cost their size once and no more.
+
+# ---------- Working documents (not part of the deliverable) ----------
+*.pdf

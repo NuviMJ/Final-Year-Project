@@ -1,16 +1,71 @@
-# mobile
+# QoLGuard Mobile
 
-A new Flutter project.
+Flutter client for QoLGuard — early detection of quality-of-life decline in
+long-term medication users.
 
-## Getting Started
+> This application provides decision support only. It does not diagnose disease
+> and does not replace a healthcare professional.
 
-This project is a starting point for a Flutter application.
+## Requirements
 
-A few resources to get you started if this is your first Flutter project:
+- Flutter 3.32+ / Dart 3.8+
+- An Android emulator or a physical device
+- The backend running — see [`../backend/README.md`](../backend/README.md)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Run
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```
+flutter pub get
+flutter run
+```
+
+Open this `mobile/` folder as the VS Code workspace root, so the Flutter and
+Dart extensions find `pubspec.yaml`.
+
+## Backend connection
+
+`lib/core/config/env.dart` resolves the API base URL per platform. The Android
+emulator runs behind its own NAT, so `localhost` there means the emulator
+itself, not your development machine — `10.0.2.2` is the alias mapping to the
+host loopback. Getting this wrong is the most common reason a first
+Flutter/FastAPI integration appears to hang.
+
+To point at a different host, such as a physical phone reaching your laptop
+over Wi-Fi:
+
+```
+flutter run --dart-define=API_BASE_URL=http://192.168.1.20:8000
+```
+
+The backend must then be started with `--host 0.0.0.0` so it accepts
+connections from outside the machine. The bundled **QoLGuard API** PyCharm run
+configuration already does this.
+
+## Structure
+
+```
+lib/
+├── main.dart              Entry point, ProviderScope
+├── app.dart               MaterialApp, theme
+└── core/
+    ├── config/            Environment and app-wide constants
+    ├── theme/             Colours and Material theme
+    └── widgets/           Shared widgets
+```
+
+Features are added under `lib/features/<name>/` as they are built, each split
+into `data/` (API clients and DTOs), `domain/` (entities and repository
+interfaces), and `presentation/` (Riverpod providers and screens).
+
+Platforms are limited to Android and iOS. To add desktop or web back:
+
+```
+flutter create --platforms=web,windows,linux,macos .
+```
+
+## Tests
+
+```
+flutter analyze
+flutter test
+```

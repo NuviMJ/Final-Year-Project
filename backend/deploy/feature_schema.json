@@ -1,0 +1,250 @@
+{
+  "model_input_columns": [
+    "Age",
+    "Gender",
+    "Drug_Class",
+    "Dosage_mg",
+    "Treatment_Duration_Days",
+    "Concomitant_Drug_Count",
+    "Smoker",
+    "Alcohol_Use",
+    "Sleep_Quality",
+    "Physical_Activity_Level",
+    "Daily_Steps",
+    "Dietary_Habits",
+    "Sleep_Disorders",
+    "Side_Effect",
+    "Severity",
+    "Seriousness",
+    "Onset_Days",
+    "Known_Side_Effect_Count",
+    "Severe_Side_Effect_Count",
+    "Drug_Rating"
+  ],
+  "n_features": 20,
+  "fields": {
+    "Age": {
+      "required": true,
+      "source": "user_input",
+      "description": "Patient age in years",
+      "type": "number",
+      "min": 18.0,
+      "max": 90.0
+    },
+    "Gender": {
+      "required": true,
+      "source": "user_input",
+      "description": "Patient gender",
+      "type": "categorical_ordered",
+      "allowed_values": [
+        "Female",
+        "Male"
+      ]
+    },
+    "Drug_Class": {
+      "required": true,
+      "source": "derived_from_drug",
+      "description": "",
+      "type": "categorical",
+      "allowed_values": [
+        "Aminopenicillins",
+        "Angiotensin Converting Enzyme Inhibitors",
+        "Calcium channel blocking agents",
+        "Insulin",
+        "Miscellaneous analgesics",
+        "Non-sulfonylureas",
+        "Nonsteroidal anti-inflammatory drugs",
+        "Proton pump inhibitors",
+        "Selective serotonin reuptake inhibitors",
+        "Statins"
+      ]
+    },
+    "Dosage_mg": {
+      "required": true,
+      "source": "user_input",
+      "description": "Total daily dose (mg; international units for Insulin)",
+      "type": "number",
+      "min": 2.5,
+      "max": 4000.0
+    },
+    "Treatment_Duration_Days": {
+      "required": true,
+      "source": "user_input",
+      "description": "Days on this medication so far",
+      "type": "number",
+      "min": 1.0,
+      "max": 1825.0
+    },
+    "Concomitant_Drug_Count": {
+      "required": true,
+      "source": "user_input",
+      "description": "Number of OTHER medications taken alongside this one",
+      "type": "number",
+      "min": 0.0,
+      "max": 3.0
+    },
+    "Smoker": {
+      "required": true,
+      "source": "user_input",
+      "description": "Current smoker",
+      "type": "categorical_ordered",
+      "allowed_values": [
+        "No",
+        "Yes"
+      ]
+    },
+    "Alcohol_Use": {
+      "required": true,
+      "source": "user_input",
+      "description": "Alcohol consumption",
+      "type": "categorical_ordered",
+      "allowed_values": [
+        "No_Alcohol",
+        "Occasional",
+        "Frequent"
+      ]
+    },
+    "Sleep_Quality": {
+      "required": true,
+      "source": "user_input",
+      "description": "Self-rated sleep quality (1 = worst, 10 = best)",
+      "type": "number",
+      "min": 4.0,
+      "max": 9.0
+    },
+    "Physical_Activity_Level": {
+      "required": true,
+      "source": "user_input",
+      "description": "General physical activity level",
+      "type": "categorical_ordered",
+      "allowed_values": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "Daily_Steps": {
+      "required": true,
+      "source": "user_input",
+      "description": "Typical daily step count",
+      "type": "number",
+      "min": 3000.0,
+      "max": 11000.0
+    },
+    "Dietary_Habits": {
+      "required": true,
+      "source": "user_input",
+      "description": "General diet quality",
+      "type": "categorical_ordered",
+      "allowed_values": [
+        "unhealthy",
+        "medium",
+        "healthy"
+      ]
+    },
+    "Sleep_Disorders": {
+      "required": true,
+      "source": "user_input",
+      "description": "Diagnosed sleep disorder",
+      "type": "categorical_ordered",
+      "allowed_values": [
+        "no",
+        "yes"
+      ]
+    },
+    "Side_Effect": {
+      "required": true,
+      "source": "user_input",
+      "description": "Main side effect experienced",
+      "type": "categorical",
+      "allowed_values": [
+        "Abdominal Pain",
+        "Anxiety",
+        "Constipation",
+        "Diarrhea",
+        "Dizziness",
+        "Dry Cough",
+        "Dry Mouth",
+        "Fatigue",
+        "Headache",
+        "Heartburn",
+        "Hypoglycemia",
+        "Insomnia",
+        "Liver Toxicity",
+        "Muscle Pain",
+        "Nausea",
+        "Palpitations",
+        "Rash",
+        "Stomach Pain",
+        "Sweating",
+        "Swelling",
+        "Weight Gain"
+      ]
+    },
+    "Severity": {
+      "required": true,
+      "source": "user_input",
+      "description": "How severe the side effect feels to the patient",
+      "type": "categorical_ordered",
+      "allowed_values": [
+        "Mild",
+        "Moderate",
+        "Severe"
+      ]
+    },
+    "Seriousness": {
+      "required": true,
+      "source": "user_input",
+      "description": "Clinical seriousness grade of the reaction",
+      "type": "categorical_ordered",
+      "allowed_values": [
+        "mild",
+        "moderate",
+        "severe",
+        "fatal"
+      ]
+    },
+    "Onset_Days": {
+      "required": true,
+      "source": "user_input",
+      "description": "Days from starting the drug until the side effect appeared",
+      "type": "number",
+      "min": 0.0,
+      "max": 31.0
+    },
+    "Known_Side_Effect_Count": {
+      "required": true,
+      "source": "derived_from_drug",
+      "description": "",
+      "type": "number",
+      "min": 21.0,
+      "max": 334.0
+    },
+    "Severe_Side_Effect_Count": {
+      "required": true,
+      "source": "derived_from_drug",
+      "description": "",
+      "type": "number",
+      "min": 1.0,
+      "max": 27.0
+    },
+    "Drug_Rating": {
+      "required": true,
+      "source": "derived_from_drug",
+      "description": "",
+      "type": "number",
+      "min": 4.2,
+      "max": 9.7
+    }
+  },
+  "class_order": [
+    "Low",
+    "Medium",
+    "High"
+  ],
+  "class_to_index": {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2
+  }
+}
