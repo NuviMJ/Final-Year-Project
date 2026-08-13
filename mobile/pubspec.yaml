@@ -42,6 +42,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4
   flutter_lints: ^5.0.0
 
   # Code generation for freezed models and JSON serialisation.
@@ -57,3 +58,8 @@ flutter:
   # unused stock artwork in a red palette that clashes with the app's teal.
   assets:
     - assets/images/QoLGuard_wordmark.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/QoLGuard_icon.png"
