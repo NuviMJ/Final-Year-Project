@@ -42,6 +42,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4
   flutter_lints: ^5.0.0
 
   # Code generation for freezed models and JSON serialisation.
@@ -57,3 +58,18 @@ flutter:
   # unused stock artwork in a red palette that clashes with the app's teal.
   assets:
     - assets/images/QoLGuard_wordmark.png
+
+# Launcher icon generation. Run after changing the artwork:
+#     dart run flutter_launcher_icons
+#
+# The source is a full-bleed rounded square with the shield centred, so it also
+# serves as the adaptive foreground. Android crops adaptive icons to roughly the
+# central two thirds; setting the background to the same teal makes that crop
+# invisible rather than leaving a white ring around the shield.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/QoLGuard_icon.png"
+  adaptive_icon_background: "#0F766E"
+  adaptive_icon_foreground: "assets/images/QoLGuard_icon.png"
+  remove_alpha_ios: true

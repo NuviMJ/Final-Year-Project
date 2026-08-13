@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qolguard/core/network/api_exception.dart';
 import 'package:qolguard/features/medications/domain/medication.dart';
 import 'package:qolguard/features/startup/data/health_repository.dart';
-import 'package:qolguard/features/startup/presentation/startup_screen.dart';
+import 'package:qolguard/features/startup/presentation/splash_screen.dart';
+import 'package:qolguard/features/startup/presentation/widgets/pulse_line.dart';
 
 void main() {
   group('ApiException', () {
@@ -83,7 +86,7 @@ void main() {
     });
   });
 
-  group('StartupScreen', () {
+  group('SplashScreen', () {
     testWidgets('reports a clear message when the backend is unreachable',
         (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -96,38 +99,54 @@ void main() {
               ),
             ),
           ],
-          child: const MaterialApp(home: StartupScreen()),
+          child: const MaterialApp(home: SplashScreen()),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
       expect(find.text('Cannot reach the server'), findsOneWidget);
       expect(find.text('Try again'), findsOneWidget);
     });
 
-    testWidgets('shows the loaded model once the backend answers',
+    testWidgets('shows the wordmark and tagline while connecting',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            // Never completes, so the branding state stays on screen.
             serviceStatusProvider.overrideWith(
-              (ref) async => const ServiceStatus(
-                appName: 'QoLGuard API',
-                version: '0.1.0',
-                modelLoaded: true,
-                modelVersion: 'xgboost-3class-49f-300r',
-                supportedDrugs: 10,
-              ),
+              (ref) => Completer<ServiceStatus>().future,
             ),
           ],
-          child: const MaterialApp(home: StartupScreen()),
+          child: const MaterialApp(home: SplashScreen()),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 900));
 
-      expect(find.text('Connected'), findsOneWidget);
-      expect(find.textContaining('10 medications'), findsOneWidget);
-      expect(find.text('Start assessment'), findsOneWidget);
+      expect(find.byType(Image), findsOneWidget);
+      expect(find.text('Connecting…'), findsOneWidget);
+      expect(find.byType(CustomPaint), findsWidgets);
+    });
+  });
+
+  group('PulseLinePainter', () {
+    test('repaints only when something it draws has changed', () {
+      const PulseLinePainter base =
+          PulseLinePainter(progress: 0.5, color: Color(0xFF0F766E));
+
+      expect(
+        base.shouldRepaint(
+          const PulseLinePainter(progress: 0.5, color: Color(0xFF0F766E)),
+        ),
+        isFalse,
+      );
+      expect(
+        base.shouldRepaint(
+          const PulseLinePainter(progress: 0.6, color: Color(0xFF0F766E)),
+        ),
+        isTrue,
+      );
     });
   });
 }

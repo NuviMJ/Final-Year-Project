@@ -1,30 +1,31 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/assessment/presentation/assessment_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
 import '../../features/medications/presentation/medication_selection_screen.dart';
 import '../../features/prediction/presentation/result_screen.dart';
-import '../../features/startup/presentation/startup_screen.dart';
+import '../../features/startup/presentation/splash_screen.dart';
 
-/// Application routes.
-///
-/// The startup route is the entry point deliberately: it verifies the backend
-/// is reachable before any assessment can begin, so a connectivity problem is
-/// reported once, up front, rather than as a failure part-way through a form
-/// the patient has already filled in.
 abstract final class AppRoutes {
-  static const String startup = '/';
+  static const String splash = '/';
+  static const String home = '/home';
   static const String medications = '/medications';
   static const String assessment = '/assessment';
   static const String result = '/result';
 }
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: AppRoutes.startup,
+  initialLocation: AppRoutes.splash,
   routes: <RouteBase>[
     GoRoute(
-      path: AppRoutes.startup,
-      name: 'startup',
-      builder: (_, __) => const StartupScreen(),
+      path: AppRoutes.splash,
+      name: 'splash',
+      builder: (_, __) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.home,
+      name: 'home',
+      builder: (_, __) => const HomeScreen(),
     ),
     GoRoute(
       path: AppRoutes.medications,
