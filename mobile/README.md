@@ -57,10 +57,28 @@ Features are added under `lib/features/<name>/` as they are built, each split
 into `data/` (API clients and DTOs), `domain/` (entities and repository
 interfaces), and `presentation/` (Riverpod providers and screens).
 
-Platforms are limited to Android and iOS. To add desktop or web back:
+## Platforms
+
+Android and iOS are the delivery targets. **Web and Windows are also enabled**,
+purely as a development convenience — `flutter run -d chrome` reloads in a
+second or two, where an Android emulator takes far longer, which makes UI work
+much faster. Nothing in the codebase is desktop- or web-specific.
 
 ```
-flutter create --platforms=web,windows,linux,macos .
+flutter run -d chrome     # fastest loop for UI work
+flutter run -d windows    # desktop window
+flutter run               # Android emulator or connected device
+```
+
+`lib/core/config/env.dart` resolves the backend URL per platform, so all three
+reach the API without configuration: web and Windows use `localhost`, Android
+uses `10.0.2.2`.
+
+macOS and Linux are not enabled, since neither can be built from Windows. To add
+any platform back:
+
+```
+flutter create --platforms=linux,macos .
 ```
 
 ## Tests
