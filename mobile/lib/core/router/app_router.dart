@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/assessment/presentation/assessment_screen.dart';
 import '../../features/medications/presentation/medication_selection_screen.dart';
+import '../../features/prediction/presentation/result_screen.dart';
 import '../../features/startup/presentation/startup_screen.dart';
 
 /// Application routes.
@@ -12,6 +14,8 @@ import '../../features/startup/presentation/startup_screen.dart';
 abstract final class AppRoutes {
   static const String startup = '/';
   static const String medications = '/medications';
+  static const String assessment = '/assessment';
+  static const String result = '/result';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -26,6 +30,16 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.medications,
       name: 'medications',
       builder: (_, __) => const MedicationSelectionScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.assessment,
+      name: 'assessment',
+      builder: (_, __) => const AssessmentScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.result,
+      name: 'result',
+      builder: (_, __) => const ResultScreen(),
     ),
   ],
 );

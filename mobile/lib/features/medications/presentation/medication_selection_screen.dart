@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/network/api_exception.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_state_views.dart';
+import '../../assessment/application/assessment_controller.dart';
+import '../../assessment/data/schema_repository.dart';
+import '../../assessment/domain/field_spec.dart';
 import '../data/medication_repository.dart';
 import '../domain/medication.dart';
 
@@ -102,6 +108,7 @@ class _List extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (BuildContext context, int index) =>
                   _MedicationTile(medication: medications[index]),
+
             ),
           ),
       ],
@@ -109,13 +116,13 @@ class _List extends StatelessWidget {
   }
 }
 
-class _MedicationTile extends StatelessWidget {
+class _MedicationTile extends ConsumerWidget {
   const _MedicationTile({required this.medication});
 
   final Medication medication;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
 
     return Card(
@@ -150,19 +157,29 @@ class _MedicationTile extends StatelessWidget {
           ],
         ),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          // The assessment form arrives in the next increment; until then this
-          // confirms the selection reached the screen with its dose limits.
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '${medication.name} selected — dose range '
-                '${medication.doseRangeLabel}',
-              ),
-            ),
-          );
-        },
+        onTap: () => _startAssessment(context, ref),
       ),
     );
+  }
+
+  /// Seeds a fresh assessment for this medication and opens the form.
+  ///
+  /// The schema must be in hand before the form is built, since every field and
+  /// its starting value comes from it. Awaiting the provider here means the
+  /// first tap absorbs the fetch — subsequent ones are instant, because the
+  /// contract is cached for the session.
+  Future<void> _startAssessment(BuildContext context, WidgetRef ref) async {
+    try {
+      final AssessmentSchema schema =
+          await ref.read(assessmentSchemaProvider.future);
+      if (!context.mounted) return;
+
+      ref.read(assessmentControllerProvider.notifier).start(medication, schema);
+      context.go(AppRoutes.assessment);
+    } on ApiException catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
+    }
   }
 }

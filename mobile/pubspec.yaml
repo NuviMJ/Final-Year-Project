@@ -52,6 +52,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # Assets are declared here as they are added, e.g.
-  # assets:
-  #   - assets/images/
+
+  # Only the wordmark is declared. The other files in assets/images/ are
+  # unused stock artwork in a red palette that clashes with the app's teal.
+  assets:
+    - assets/images/QoLGuard_wordmark.png
