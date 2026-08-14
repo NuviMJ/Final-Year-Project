@@ -7,6 +7,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/medications/presentation/medication_selection_screen.dart';
 import '../../features/prediction/presentation/result_screen.dart';
 import '../../features/startup/presentation/splash_screen.dart';
+import '../../features/trends/presentation/trends_screen.dart';
 
 abstract final class AppRoutes {
   static const String splash = '/';
@@ -15,6 +16,7 @@ abstract final class AppRoutes {
   static const String assessment = '/assessment';
   static const String result = '/result';
   static const String history = '/history';
+  static const String trends = '/trends';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -44,6 +46,11 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.result,
       name: 'result',
       builder: (_, __) => const ResultScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.trends,
+      name: 'trends',
+      builder: (_, __) => const TrendsScreen(),
     ),
     GoRoute(
       path: AppRoutes.history,

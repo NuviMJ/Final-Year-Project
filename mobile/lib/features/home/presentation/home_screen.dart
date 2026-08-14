@@ -74,9 +74,11 @@ class HomeScreen extends ConsumerWidget {
             _ActionTile(
               icon: Icons.show_chart_outlined,
               title: 'Your trends',
-              subtitle: 'Available after a few assessments',
-              enabled: false,
-              onTap: () {},
+              subtitle: history.length < 2
+                  ? 'Needs at least two assessments'
+                  : 'How your risk is moving over time',
+              enabled: history.length >= 2,
+              onTap: () => context.go(AppRoutes.trends),
             ),
             const SizedBox(height: 28),
             Container(
