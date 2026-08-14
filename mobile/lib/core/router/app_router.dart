@@ -4,10 +4,12 @@ import '../../features/assessment/presentation/assessment_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/past_result_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/learn/presentation/learn_screen.dart';
 import '../../features/medications/presentation/medication_selection_screen.dart';
 import '../../features/prediction/presentation/result_screen.dart';
 import '../../features/reminders/presentation/edit_reminder_screen.dart';
 import '../../features/reminders/presentation/reminders_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/startup/presentation/splash_screen.dart';
 import '../../features/trends/presentation/trends_screen.dart';
 
@@ -21,6 +23,8 @@ abstract final class AppRoutes {
   static const String trends = '/trends';
   static const String reminders = '/reminders';
   static const String addReminder = '/reminders/new';
+  static const String learn = '/learn';
+  static const String settings = '/settings';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -75,6 +79,24 @@ final GoRouter appRouter = GoRouter(
               EditReminderScreen(reminderId: state.pathParameters['id']),
         ),
       ],
+    ),
+    GoRoute(
+      path: AppRoutes.learn,
+      name: 'learn',
+      builder: (_, __) => const LearnScreen(),
+      routes: <RouteBase>[
+        GoRoute(
+          path: ':id',
+          name: 'article',
+          builder: (_, GoRouterState state) =>
+              ArticleScreen(articleId: state.pathParameters['id']!),
+        ),
+      ],
+    ),
+    GoRoute(
+      path: AppRoutes.settings,
+      name: 'settings',
+      builder: (_, __) => const SettingsScreen(),
     ),
     GoRoute(
       path: AppRoutes.history,

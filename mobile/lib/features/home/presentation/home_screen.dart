@@ -28,16 +28,32 @@ class HomeScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
           children: <Widget>[
-            Text(
-              AppConstants.appName,
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Quality of life, guarded',
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        AppConstants.appName,
+                        style: theme.textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Quality of life, guarded',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined),
+                  tooltip: 'Settings',
+                  onPressed: () => context.go(AppRoutes.settings),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             _LatestRiskCard(record: latest),
@@ -74,6 +90,13 @@ class HomeScreen extends ConsumerWidget {
                       '${history.length == 1 ? '' : 's'} on this device',
               enabled: history.isNotEmpty,
               onTap: () => context.go(AppRoutes.history),
+            ),
+            const SizedBox(height: 8),
+            _ActionTile(
+              icon: Icons.menu_book_outlined,
+              title: 'Learn',
+              subtitle: 'What your result means, and what affects it',
+              onTap: () => context.go(AppRoutes.learn),
             ),
             const SizedBox(height: 8),
             _ActionTile(
