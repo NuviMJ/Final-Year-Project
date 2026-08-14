@@ -6,6 +6,7 @@ import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_state_views.dart';
+import '../../history/data/assessment_store.dart';
 import '../data/health_repository.dart';
 import 'widgets/pulse_line.dart';
 
@@ -63,6 +64,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Future<void> _openWhenReady() async {
     final Stopwatch clock = Stopwatch()..start();
     try {
+      // Local storage is opened here rather than lazily, so every screen after
+      // the splash can read stored assessments synchronously.
+      await ref.read(sharedPreferencesProvider.future);
       await ref.read(serviceStatusProvider.future);
     } catch (_) {
       // Rendered by the error branch in build(); nothing to do here.
