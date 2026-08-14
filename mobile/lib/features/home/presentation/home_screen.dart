@@ -7,6 +7,8 @@ import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../history/data/assessment_store.dart';
+import '../../reminders/data/reminder_store.dart';
+import '../../reminders/domain/reminder.dart';
 import '../../history/domain/assessment_record.dart';
 import '../../startup/data/health_repository.dart';
 
@@ -19,6 +21,7 @@ class HomeScreen extends ConsumerWidget {
     final AsyncValue<ServiceStatus> service = ref.watch(serviceStatusProvider);
     final List<AssessmentRecord> history = ref.watch(assessmentHistoryProvider);
     final AssessmentRecord? latest = history.isEmpty ? null : history.first;
+    final Reminder? nextReminder = ref.watch(nextReminderProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -55,9 +58,11 @@ class HomeScreen extends ConsumerWidget {
             _ActionTile(
               icon: Icons.alarm_outlined,
               title: 'Medication reminders',
-              subtitle: 'Not set up yet',
-              enabled: false,
-              onTap: () {},
+              subtitle: nextReminder == null
+                  ? 'None set up yet'
+                  : 'Next: ${nextReminder.medicationName} at '
+                      '${nextReminder.timeLabel}',
+              onTap: () => context.go(AppRoutes.reminders),
             ),
             const SizedBox(height: 8),
             _ActionTile(
