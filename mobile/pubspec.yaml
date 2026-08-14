@@ -39,6 +39,8 @@ dependencies:
   # Immutable models with generated JSON serialisation
   freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
+  flutter_local_notifications: ^20.1.0
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

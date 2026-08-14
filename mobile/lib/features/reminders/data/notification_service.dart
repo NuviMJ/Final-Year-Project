@@ -1,0 +1,141 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timezone/data/latest_all.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
+
+import '../domain/reminder.dart';
+
+class NotificationService {
+  NotificationService(this._plugin);
+
+  final FlutterLocalNotificationsPlugin _plugin;
+
+  static const String _channelId = 'qolguard_medication_reminders';
+  static const String _channelName = 'Medication reminders';
+
+  bool _ready = false;
+
+  /// True where the OS can actually schedule notifications.
+  static bool get isSupported =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  Future<void> initialise() async {
+    if (!isSupported || _ready) return;
+
+    // Local timezone matters: scheduling in raw UTC drifts by an hour when
+    // daylight saving changes, so an 08:00 reminder would start firing at 07:00.
+    tz_data.initializeTimeZones();
+
+    await _plugin.initialize(
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      ),
+    );
+
+    _ready = true;
+  }
+
+  /// Asks for permission to post notifications.
+  ///
+  /// Required from Android 13. Returns false if the patient declines, which is
+  /// their right — reminders then stay saved but silent, and the UI says so
+  /// rather than pretending they will fire.
+  Future<bool> requestPermission() async {
+    if (!isSupported) return false;
+    await initialise();
+
+    final AndroidFlutterLocalNotificationsPlugin? android =
+        _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    final bool granted = await android?.requestNotificationsPermission() ?? false;
+    return granted;
+  }
+
+  Future<bool> hasPermission() async {
+    if (!isSupported) return false;
+    await initialise();
+
+    final AndroidFlutterLocalNotificationsPlugin? android =
+        _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    return await android?.areNotificationsEnabled() ?? false;
+  }
+
+  /// Schedules one weekly-repeating notification per selected day.
+  Future<void> schedule(Reminder reminder) async {
+    if (!isSupported) return;
+    await initialise();
+    await cancel(reminder);
+
+    if (!reminder.enabled) return;
+
+    for (final int weekday in reminder.weekdays) {
+      await _plugin.zonedSchedule(
+        id: reminder.notificationId(weekday),
+        title: 'Time for your ${reminder.medicationName}',
+        body: 'Tap when you have taken it.',
+        scheduledDate: _nextInstanceOf(weekday, reminder.hour, reminder.minute),
+        notificationDetails: const NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channelId,
+            _channelName,
+            channelDescription:
+                'Reminds you when a medication is due to be taken.',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+        ),
+        // Inexact scheduling avoids the SCHEDULE_EXACT_ALARM permission, which
+        // Google Play restricts to alarm and calendar apps. A medication
+        // reminder a few minutes either side of the hour is fine.
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        // Repeats at the same time on the same weekday, so one call covers
+        // every future occurrence rather than needing a weekly refresh.
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      );
+    }
+  }
+
+  Future<void> cancel(Reminder reminder) async {
+    if (!isSupported) return;
+    await initialise();
+
+    for (final int id in reminder.notificationIds) {
+      await _plugin.cancel(id: id);
+    }
+  }
+
+  /// Re-schedules everything, used at startup so reminders survive a reboot.
+  Future<void> rescheduleAll(List<Reminder> reminders) async {
+    if (!isSupported) return;
+    for (final Reminder reminder in reminders) {
+      await schedule(reminder);
+    }
+  }
+
+  /// The next date and time matching this weekday and clock time.
+  static tz.TZDateTime _nextInstanceOf(int weekday, int hour, int minute) {
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime candidate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+
+    while (candidate.weekday != weekday || !candidate.isAfter(now)) {
+      candidate = candidate.add(const Duration(days: 1));
+    }
+    return candidate;
+  }
+}
+
+final Provider<NotificationService> notificationServiceProvider =
+    Provider<NotificationService>(
+  (Ref ref) => NotificationService(FlutterLocalNotificationsPlugin()),
+);

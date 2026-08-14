@@ -6,6 +6,8 @@ import '../../features/history/presentation/past_result_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/medications/presentation/medication_selection_screen.dart';
 import '../../features/prediction/presentation/result_screen.dart';
+import '../../features/reminders/presentation/edit_reminder_screen.dart';
+import '../../features/reminders/presentation/reminders_screen.dart';
 import '../../features/startup/presentation/splash_screen.dart';
 import '../../features/trends/presentation/trends_screen.dart';
 
@@ -17,6 +19,8 @@ abstract final class AppRoutes {
   static const String result = '/result';
   static const String history = '/history';
   static const String trends = '/trends';
+  static const String reminders = '/reminders';
+  static const String addReminder = '/reminders/new';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -51,6 +55,26 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.trends,
       name: 'trends',
       builder: (_, __) => const TrendsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.reminders,
+      name: 'reminders',
+      builder: (_, __) => const RemindersScreen(),
+      routes: <RouteBase>[
+        // 'new' is declared before ':id' so it is matched as the add screen
+        // rather than being read as a reminder whose id is the word "new".
+        GoRoute(
+          path: 'new',
+          name: 'addReminder',
+          builder: (_, __) => const EditReminderScreen(),
+        ),
+        GoRoute(
+          path: ':id',
+          name: 'editReminder',
+          builder: (_, GoRouterState state) =>
+              EditReminderScreen(reminderId: state.pathParameters['id']),
+        ),
+      ],
     ),
     GoRoute(
       path: AppRoutes.history,
