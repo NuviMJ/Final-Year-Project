@@ -5,7 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/app_state_views.dart';
+import '../../history/data/assessment_store.dart';
+import '../../history/domain/assessment_record.dart';
 import '../../prediction/data/prediction_repository.dart';
+import '../../prediction/domain/prediction.dart';
 import '../application/assessment_controller.dart';
 import '../data/schema_repository.dart';
 import '../domain/field_spec.dart';
@@ -221,6 +224,23 @@ class _Actions extends ConsumerWidget {
       return;
     }
 
+    // Persist before navigating, so the result the patient is about to read is
+    // already in their history rather than appearing only if they look later.
+    final Prediction? prediction =
+        ref.read(predictionControllerProvider).value;
+    if (prediction != null && draft.medication != null) {
+      await ref.read(assessmentHistoryProvider.notifier).add(
+            AssessmentRecord.create(
+              takenAt: DateTime.now(),
+              medicationName: draft.medication!.name,
+              doseUnit: draft.medication!.doseUnit,
+              answers: draft.answers,
+              prediction: prediction,
+            ),
+          );
+    }
+
+    if (!context.mounted) return;
     context.go(AppRoutes.result);
   }
 }
