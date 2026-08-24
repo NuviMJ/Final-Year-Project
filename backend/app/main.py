@@ -85,3 +85,5 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+    # This is for app run in the mobile device with 'flutter run'
+    # flutter run --dart-define=API_BASE_URL=http://192.168.1.32:8000

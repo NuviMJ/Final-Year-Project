@@ -32,7 +32,6 @@ class AssessmentStep {
       fieldNames: <String>[
         'Dosage_mg',
         'Treatment_Duration_Days',
-        'Concomitant_Drug_Count',
       ],
     ),
     AssessmentStep(
@@ -70,14 +69,18 @@ class AssessmentStep {
 /// exists to remove.
 class AssessmentDraft {
   const AssessmentDraft({
-    this.medication,
+    this.medications = const <Medication>[],
     this.answers = const <String, Object>{},
     this.stepIndex = 0,
   });
 
-  final Medication? medication;
+  final List<Medication> medications;
+
   final Map<String, Object> answers;
   final int stepIndex;
+  T
+  Medication? get medication =>
+      medications.isEmpty ? null : medications.first;
 
   bool get isFirstStep => stepIndex == 0;
   bool get isLastStep => stepIndex == AssessmentStep.all.length - 1;
@@ -85,12 +88,12 @@ class AssessmentDraft {
   double get progress => (stepIndex + 1) / AssessmentStep.all.length;
 
   AssessmentDraft copyWith({
-    Medication? medication,
+    List<Medication>? medications,
     Map<String, Object>? answers,
     int? stepIndex,
   }) {
     return AssessmentDraft(
-      medication: medication ?? this.medication,
+      medications: medications ?? this.medications,
       answers: answers ?? this.answers,
       stepIndex: stepIndex ?? this.stepIndex,
     );
@@ -107,25 +110,36 @@ class AssessmentController extends Notifier<AssessmentDraft> {
   @override
   AssessmentDraft build() => const AssessmentDraft();
 
-  /// Begin a new assessment for the chosen medication.
-  ///
-  /// Every field is seeded with a valid starting value taken from the schema,
-  /// so the form cannot be submitted incomplete. `Dosage_mg` is seeded from the
-  /// drug's own range instead — the schema's global range spans every
-  /// medication at once, so its midpoint would be nonsense for most drugs.
-  void start(Medication medication, AssessmentSchema schema) {
+  /// Begin a new assessment for a single medication.
+  void start(Medication medication, AssessmentSchema schema) =>
+      startAll(<Medication>[medication], schema);
+
+  
+  void startAll(List<Medication> medications, AssessmentSchema schema) {
     final Map<String, Object> answers = <String, Object>{
       for (final FieldSpec field in schema.fields)
         field.name: field.initialValue(),
     };
-    answers['Dosage_mg'] = _defaultDose(medication);
+
+    if (answers.containsKey('Dosage_mg')) {
+      answers['Dosage_mg'] = _defaultDose(medications.first);
+    }
+    if (answers.containsKey('Concomitant_Drug_Count')) {
+      answers['Concomitant_Drug_Count'] =
+          concomitantCountFor(medications.length);
+    }
 
     state = AssessmentDraft(
-      medication: medication,
+      medications: List<Medication>.unmodifiable(medications),
       answers: answers,
       stepIndex: 0,
     );
   }
+
+  static const int maxMedications = 5;
+
+  static double concomitantCountFor(int selectedCount) =>
+      (selectedCount - 1).clamp(0, 3).toDouble();
 
   void setAnswer(String field, Object value) {
     state = state.copyWith(

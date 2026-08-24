@@ -44,6 +44,13 @@ final Map<String, dynamic> _schemaJson = <String, dynamic>{
       'required': true,
       'allowed_values': <dynamic>['Fatigue', 'Muscle Pain', 'Nausea'],
     },
+    <String, dynamic>{
+      'name': 'Concomitant_Drug_Count',
+      'type': 'number',
+      'required': true,
+      'min': 0.0,
+      'max': 3.0,
+    },
   ],
   'class_order': <dynamic>['Low', 'Medium', 'High'],
 };
@@ -55,6 +62,43 @@ const Medication _atorvastatin = Medication(
   doseMin: 10,
   doseMax: 80,
   typicalDoses: <double>[10, 20, 40, 80],
+);
+
+/// Four more so a realistic polypharmacy selection can be assembled.
+const Medication _metformin = Medication(
+  name: 'Metformin',
+  drugClass: 'Non-sulfonylureas',
+  doseUnit: 'mg/day',
+  doseMin: 500,
+  doseMax: 2000,
+  typicalDoses: <double>[500, 850, 1000, 1500, 2000],
+);
+
+const Medication _omeprazole = Medication(
+  name: 'Omeprazole',
+  drugClass: 'Proton pump inhibitors',
+  doseUnit: 'mg/day',
+  doseMin: 10,
+  doseMax: 40,
+  typicalDoses: <double>[10, 20, 40],
+);
+
+const Medication _lisinopril = Medication(
+  name: 'Lisinopril',
+  drugClass: 'Angiotensin Converting Enzyme Inhibitors',
+  doseUnit: 'mg/day',
+  doseMin: 5,
+  doseMax: 40,
+  typicalDoses: <double>[5, 10, 20, 30, 40],
+);
+
+const Medication _insulin = Medication(
+  name: 'Insulin',
+  drugClass: 'Insulin',
+  doseUnit: 'IU/day',
+  doseMin: 10,
+  doseMax: 80,
+  typicalDoses: <double>[10, 20, 30, 40, 60, 80],
 );
 
 void main() {
@@ -154,15 +198,116 @@ void main() {
       expect(container.read(assessmentControllerProvider).stepIndex, 0);
     });
 
-    test('every schema field appears in exactly one step', () {
+    test('every field the patient answers appears in exactly one step', () {
       final List<String> grouped = <String>[
         for (final AssessmentStep step in AssessmentStep.all) ...step.fieldNames,
       ];
 
       expect(grouped.toSet().length, grouped.length,
           reason: 'a field is listed in more than one step');
-      expect(grouped.length, 16,
-          reason: 'the model takes 16 user-supplied fields');
+      expect(grouped.length, 15,
+          reason: 'the model takes 16 user-supplied fields, of which '
+              'Concomitant_Drug_Count is derived rather than asked');
+      expect(grouped, isNot(contains('Concomitant_Drug_Count')),
+          reason: 'asking for it would invite an answer contradicting the '
+              'medication list the patient already gave');
+    });
+
+    test('several medications are carried through the whole assessment', () {
+      controller.startAll(
+        <Medication>[_atorvastatin, _metformin, _omeprazole],
+        schema,
+      );
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      expect(draft.medications.length, 3);
+      expect(draft.medications.map((Medication m) => m.name),
+          <String>['Atorvastatin', 'Metformin', 'Omeprazole']);
+    });
+
+    test('the other-medicine count is derived from the selection', () {
+      controller.startAll(
+        <Medication>[_atorvastatin, _metformin, _omeprazole],
+        schema,
+      );
+
+      // Three medicines means two others alongside whichever is being scored.
+      expect(
+        container.read(assessmentControllerProvider)
+            .answers['Concomitant_Drug_Count'],
+        2.0,
+      );
+    });
+
+    test('a single medication reports no other medicines', () {
+      controller.start(_atorvastatin, schema);
+
+      expect(
+        container.read(assessmentControllerProvider)
+            .answers['Concomitant_Drug_Count'],
+        0.0,
+      );
+    });
+
+    test('the other-medicine count saturates at the trained ceiling', () {
+      // The model was trained on 0-3 concomitant drugs. Five medications means
+      // four others, which it has no way to represent — so the value must be
+      // clamped rather than sent out of range.
+      controller.startAll(
+        <Medication>[
+          _atorvastatin,
+          _metformin,
+          _omeprazole,
+          _lisinopril,
+          _insulin,
+        ],
+        schema,
+      );
+
+      expect(
+        container.read(assessmentControllerProvider)
+            .answers['Concomitant_Drug_Count'],
+        3.0,
+      );
+      expect(AssessmentController.concomitantCountFor(9), 3.0);
+    });
+
+    test('dose limits follow the first medication in the selection', () {
+      controller.startAll(<Medication>[_atorvastatin, _metformin], schema);
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      expect(draft.medication, _atorvastatin);
+      expect(draft.answers['Dosage_mg'], 40.0);
+    });
+
+    test('a field absent from the schema is never invented', () {
+      // The deployed schema always carries Concomitant_Drug_Count, but a
+      // reduced one must not gain a key the model never asked for.
+      final AssessmentSchema reduced = AssessmentSchema.fromJson(
+        <String, dynamic>{
+          'fields': <dynamic>[
+            <String, dynamic>{
+              'name': 'Age',
+              'type': 'number',
+              'required': true,
+              'min': 18.0,
+              'max': 90.0,
+            },
+          ],
+          'class_order': <dynamic>['Low', 'Medium', 'High'],
+        },
+      );
+
+      controller.startAll(<Medication>[_atorvastatin, _metformin], reduced);
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      expect(draft.answers.containsKey('Concomitant_Drug_Count'), isFalse);
+      expect(draft.answers.containsKey('Dosage_mg'), isFalse);
+      expect(draft.toRequest().keys.length, 2); // Age + Drug_Name
+    });
+
+    test('at most five medications may be assessed together', () {
+      expect(AssessmentController.maxMedications, 5);
     });
   });
 
