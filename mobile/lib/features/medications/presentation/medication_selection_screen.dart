@@ -12,12 +12,6 @@ import '../../assessment/domain/field_spec.dart';
 import '../data/medication_repository.dart';
 import '../domain/medication.dart';
 
-/// Step one of the assessment: which medication is being taken.
-///
-/// The list comes from the backend rather than being hard-coded, so it always
-/// matches what the deployed model can actually assess. Selecting a medication
-/// also fixes the dose unit and permitted dose range for the next step, which
-/// is why those are shown here.
 class MedicationSelectionScreen extends ConsumerStatefulWidget {
   const MedicationSelectionScreen({super.key});
 
@@ -30,13 +24,17 @@ class _MedicationSelectionScreenState
     extends ConsumerState<MedicationSelectionScreen> {
   String _query = '';
 
+  final Set<String> _selected = <String>{};
+
+  bool _starting = false;
+
   @override
   Widget build(BuildContext context) {
     final AsyncValue<List<Medication>> medications =
         ref.watch(medicationsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Select your medication')),
+      appBar: AppBar(title: const Text('Select your medications')),
       body: SafeArea(
         child: medications.when(
           loading: () => const AppLoadingView(message: 'Loading medications…'),
@@ -44,13 +42,73 @@ class _MedicationSelectionScreenState
             error: error,
             onRetry: () => ref.invalidate(medicationsProvider),
           ),
-          data: (List<Medication> all) => _List(
-            medications: _filter(all),
-            query: _query,
-            onQueryChanged: (String value) => setState(() => _query = value),
+          data: (List<Medication> all) => Column(
+            children: <Widget>[
+              Expanded(child: _buildList(all)),
+              _SelectionBar(
+                selectedCount: _selected.length,
+                isStarting: _starting,
+                onContinue: () => _start(all),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildList(List<Medication> all) {
+    final List<Medication> visible = _filter(all);
+    final ThemeData theme = Theme.of(context);
+
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Text(
+            'Choose every medicine you take regularly. '
+            'You can select up to ${AssessmentController.maxMedications}.',
+            style: theme.textTheme.bodyMedium
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: TextField(
+            onChanged: (String value) => setState(() => _query = value),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search by name or drug class',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        if (visible.isEmpty)
+          Expanded(
+            child: Center(
+              child: Text(
+                'No medication matches "$_query".',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+          )
+        else
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              itemCount: visible.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (BuildContext context, int index) {
+                final Medication drug = visible[index];
+                return _MedicationTile(
+                  medication: drug,
+                  selected: _selected.contains(drug.name),
+                  onToggle: () => _toggle(drug),
+                );
+              },
+            ),
+          ),
+      ],
     );
   }
 
@@ -63,70 +121,78 @@ class _MedicationSelectionScreenState
             drug.drugClass.toLowerCase().contains(needle))
         .toList();
   }
-}
 
-class _List extends StatelessWidget {
-  const _List({
-    required this.medications,
-    required this.query,
-    required this.onQueryChanged,
-  });
+  void _toggle(Medication drug) {
+    if (_selected.contains(drug.name)) {
+      setState(() => _selected.remove(drug.name));
+      return;
+    }
 
-  final List<Medication> medications;
-  final String query;
-  final ValueChanged<String> onQueryChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: TextField(
-            onChanged: onQueryChanged,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Search by name or drug class',
-              border: OutlineInputBorder(),
-            ),
+    if (_selected.length >= AssessmentController.maxMedications) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'You can assess up to ${AssessmentController.maxMedications} '
+            'medicines at a time.',
           ),
         ),
-        if (medications.isEmpty)
-          Expanded(
-            child: Center(
-              child: Text(
-                'No medication matches "$query".',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
-          )
-        else
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-              itemCount: medications.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (BuildContext context, int index) =>
-                  _MedicationTile(medication: medications[index]),
+      );
+      return;
+    }
 
-            ),
-          ),
-      ],
-    );
+    setState(() => _selected.add(drug.name));
+  }
+
+  Future<void> _start(List<Medication> all) async {
+    // Preserve the backend's ordering rather than tap order, so two patients
+    // on the same medicines produce the same list.
+    final List<Medication> chosen = all
+        .where((Medication drug) => _selected.contains(drug.name))
+        .toList();
+    if (chosen.isEmpty || _starting) return;
+
+    setState(() => _starting = true);
+    try {
+      final AssessmentSchema schema =
+          await ref.read(assessmentSchemaProvider.future);
+      if (!mounted) return;
+
+      ref.read(assessmentControllerProvider.notifier).startAll(chosen, schema);
+      context.go(AppRoutes.assessment);
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
+    } finally {
+      if (mounted) setState(() => _starting = false);
+    }
   }
 }
 
-class _MedicationTile extends ConsumerWidget {
-  const _MedicationTile({required this.medication});
+class _MedicationTile extends StatelessWidget {
+  const _MedicationTile({
+    required this.medication,
+    required this.selected,
+    required this.onToggle,
+  });
 
   final Medication medication;
+  final bool selected;
+  final VoidCallback onToggle;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
     return Card(
       margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: selected ? AppColors.primary : theme.dividerColor,
+          width: selected ? 2 : 1,
+        ),
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
@@ -141,7 +207,8 @@ class _MedicationTile extends ConsumerWidget {
         ),
         title: Text(
           medication.name,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,30 +223,96 @@ class _MedicationTile extends ConsumerWidget {
             ),
           ],
         ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => _startAssessment(context, ref),
+        trailing: Checkbox(
+          value: selected,
+          onChanged: (_) => onToggle(),
+        ),
+        onTap: onToggle,
+        selected: selected,
+      ),
+    );
+  }
+}
+
+/// The bottom bar: how many are chosen, what the model will do with them, and
+/// the button that starts the form.
+class _SelectionBar extends StatelessWidget {
+  const _SelectionBar({
+    required this.selectedCount,
+    required this.isStarting,
+    required this.onContinue,
+  });
+
+  final int selectedCount;
+  final bool isStarting;
+  final VoidCallback onContinue;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final bool enabled = selectedCount > 0 && !isStarting;
+
+    return Material(
+      elevation: 8,
+      color: theme.colorScheme.surface,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                selectedCount == 0
+                    ? 'No medicine selected yet'
+                    : '$selectedCount of ${AssessmentController.maxMedications}'
+                        ' selected',
+                style: theme.textTheme.labelLarge,
+              ),
+              if (selectedCount > 1) ...<Widget>[
+                const SizedBox(height: 4),
+                Text(
+                  _explanation(selectedCount),
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: enabled ? onContinue : null,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: isStarting
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            selectedCount <= 1
+                                ? 'Continue'
+                                : 'Continue with $selectedCount medicines',
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  /// Seeds a fresh assessment for this medication and opens the form.
-  ///
-  /// The schema must be in hand before the form is built, since every field and
-  /// its starting value comes from it. Awaiting the provider here means the
-  /// first tap absorbs the fetch — subsequent ones are instant, because the
-  /// contract is cached for the session.
-  Future<void> _startAssessment(BuildContext context, WidgetRef ref) async {
-    try {
-      final AssessmentSchema schema =
-          await ref.read(assessmentSchemaProvider.future);
-      if (!context.mounted) return;
-
-      ref.read(assessmentControllerProvider.notifier).start(medication, schema);
-      context.go(AppRoutes.assessment);
-    } on ApiException catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error.message)));
-    }
+  /// Says plainly that each medicine is scored on its own, and warns when the
+  /// model's own cap on concomitant medicines has been passed.
+  String _explanation(int count) {
+    const String base = 'Each medicine is assessed separately.';
+    return count > 4
+        ? '$base The model counts at most 3 other medicines, so the extra '
+            'ones are not reflected in that count.'
+        : base;
   }
 }
