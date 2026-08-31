@@ -3,12 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../medications/domain/medication.dart';
 import '../domain/field_spec.dart';
 
-/// The four steps of the assessment, and which fields belong to each.
-///
-/// The backend returns the sixteen fields as a flat list — it describes the
-/// model's contract, not a user journey. Grouping them is a presentation
-/// decision, made here so a patient answers related questions together rather
-/// than working through one long form.
 class AssessmentStep {
   const AssessmentStep({
     required this.title,
@@ -23,16 +17,8 @@ class AssessmentStep {
   static const List<AssessmentStep> all = <AssessmentStep>[
     AssessmentStep(
       title: 'About you',
-      subtitle: 'Basic details used to interpret your other answers',
-      fieldNames: <String>['Age', 'Gender'],
-    ),
-    AssessmentStep(
-      title: 'Your medication',
-      subtitle: 'How much you take, and for how long',
-      fieldNames: <String>[
-        'Dosage_mg',
-        'Treatment_Duration_Days',
-      ],
+      subtitle: 'Your details, and how long you have been on these medicines',
+      fieldNames: <String>['Age', 'Gender', 'Treatment_Duration_Days'],
     ),
     AssessmentStep(
       title: 'Side effect',
@@ -61,26 +47,24 @@ class AssessmentStep {
 }
 
 /// An assessment in progress.
-///
-/// Answers are held in a map keyed by the model's own field names rather than
-/// as sixteen typed properties. The whole point of driving the form from
-/// `/schema` is that this layer does not need to know what the fields are —
-/// typing them here would reintroduce the duplication the schema endpoint
-/// exists to remove.
+
 class AssessmentDraft {
   const AssessmentDraft({
     this.medications = const <Medication>[],
+    this.doses = const <String, double>{},
     this.answers = const <String, Object>{},
     this.stepIndex = 0,
   });
 
   final List<Medication> medications;
-
+  final Map<String, double> doses;
   final Map<String, Object> answers;
   final int stepIndex;
-  T
+
   Medication? get medication =>
       medications.isEmpty ? null : medications.first;
+  double doseFor(Medication medication) =>
+      doses[medication.name] ?? medication.defaultDose;
 
   bool get isFirstStep => stepIndex == 0;
   bool get isLastStep => stepIndex == AssessmentStep.all.length - 1;
@@ -89,40 +73,57 @@ class AssessmentDraft {
 
   AssessmentDraft copyWith({
     List<Medication>? medications,
+    Map<String, double>? doses,
     Map<String, Object>? answers,
     int? stepIndex,
   }) {
     return AssessmentDraft(
       medications: medications ?? this.medications,
+      doses: doses ?? this.doses,
       answers: answers ?? this.answers,
       stepIndex: stepIndex ?? this.stepIndex,
     );
   }
 
-  /// The request body for `POST /predict`.
-  Map<String, dynamic> toRequest() => <String, dynamic>{
-        'Drug_Name': medication!.name,
+  Map<String, dynamic> toRequestFor(Medication medication) =>
+      <String, dynamic>{
+        'Drug_Name': medication.name,
         ...answers,
+        if (answers.containsKey('Dosage_mg')) 'Dosage_mg': doseFor(medication),
       };
+
+  Map<String, dynamic> toRequest() => toRequestFor(medication!);
 }
 
 class AssessmentController extends Notifier<AssessmentDraft> {
   @override
   AssessmentDraft build() => const AssessmentDraft();
 
-  /// Begin a new assessment for a single medication.
+  static const int maxMedications = 5;
+
+  static double concomitantCountFor(int selectedCount) =>
+      (selectedCount - 1).clamp(0, 3).toDouble();
+
   void start(Medication medication, AssessmentSchema schema) =>
       startAll(<Medication>[medication], schema);
 
-  
-  void startAll(List<Medication> medications, AssessmentSchema schema) {
+  void startAll(
+    List<Medication> medications,
+    AssessmentSchema schema, {
+    Map<String, double>? doses,
+  }) {
     final Map<String, Object> answers = <String, Object>{
       for (final FieldSpec field in schema.fields)
         field.name: field.initialValue(),
     };
 
+    final Map<String, double> resolved = <String, double>{
+      for (final Medication drug in medications)
+        drug.name: doses?[drug.name] ?? drug.defaultDose,
+    };
+
     if (answers.containsKey('Dosage_mg')) {
-      answers['Dosage_mg'] = _defaultDose(medications.first);
+      answers['Dosage_mg'] = resolved[medications.first.name]!;
     }
     if (answers.containsKey('Concomitant_Drug_Count')) {
       answers['Concomitant_Drug_Count'] =
@@ -131,15 +132,18 @@ class AssessmentController extends Notifier<AssessmentDraft> {
 
     state = AssessmentDraft(
       medications: List<Medication>.unmodifiable(medications),
+      doses: Map<String, double>.unmodifiable(resolved),
       answers: answers,
       stepIndex: 0,
     );
   }
 
-  static const int maxMedications = 5;
-
-  static double concomitantCountFor(int selectedCount) =>
-      (selectedCount - 1).clamp(0, 3).toDouble();
+  /// Change one medication's dose after the assessment has begun.
+  void setDose(String medicationName, double dose) {
+    state = state.copyWith(
+      doses: <String, double>{...state.doses, medicationName: dose},
+    );
+  }
 
   void setAnswer(String field, Object value) {
     state = state.copyWith(
@@ -168,14 +172,6 @@ class AssessmentController extends Notifier<AssessmentDraft> {
     }
   }
 
-  /// Prefers a typical prescribed dose over the arithmetic midpoint, since
-  /// "40 mg" is a dose a patient recognises and "45 mg" is not.
-  static double _defaultDose(Medication medication) {
-    if (medication.typicalDoses.isEmpty) {
-      return (medication.doseMin + medication.doseMax) / 2;
-    }
-    return medication.typicalDoses[medication.typicalDoses.length ~/ 2];
-  }
 }
 
 final NotifierProvider<AssessmentController, AssessmentDraft>

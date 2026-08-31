@@ -12,6 +12,19 @@ import '../../assessment/domain/field_spec.dart';
 import '../data/medication_repository.dart';
 import '../domain/medication.dart';
 
+/// Step one of the assessment: which medications are being taken, and at what
+/// dose.
+///
+/// The list comes from the backend rather than being hard-coded, so it always
+/// matches what the deployed model can actually assess.
+///
+/// Dose is asked here rather than on the form because it is the one input that
+/// differs per medication — a single "daily dose" question cannot describe
+/// four tablets. Everything the form goes on to ask describes the patient, and
+/// is the same whichever tablet is being scored.
+///
+/// The model still scores one drug at a time, so the selection produces one
+/// prediction per medication rather than a joint assessment.
 class MedicationSelectionScreen extends ConsumerStatefulWidget {
   const MedicationSelectionScreen({super.key});
 
@@ -24,7 +37,11 @@ class _MedicationSelectionScreenState
     extends ConsumerState<MedicationSelectionScreen> {
   String _query = '';
 
-  final Set<String> _selected = <String>{};
+  /// Selected drug names mapped to the dose the patient takes.
+  ///
+  /// Keyed by name rather than by object, so filtering the visible list can
+  /// never drop a selection already made.
+  final Map<String, double> _selected = <String, double>{};
 
   bool _starting = false;
 
@@ -34,7 +51,14 @@ class _MedicationSelectionScreenState
         ref.watch(medicationsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Select your medications')),
+      appBar: AppBar(
+        title: const Text('Select your medications'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          onPressed: () => context.go(AppRoutes.home),
+        ),
+      ),
       body: SafeArea(
         child: medications.when(
           loading: () => const AppLoadingView(message: 'Loading medications…'),
@@ -66,8 +90,9 @@ class _MedicationSelectionScreenState
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Text(
-            'Choose every medicine you take regularly. '
-            'You can select up to ${AssessmentController.maxMedications}.',
+            'Choose every medicine you take regularly, up to '
+            '${AssessmentController.maxMedications}. '
+            'Check the daily dose shown and change it if it is not yours.',
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
@@ -102,8 +127,9 @@ class _MedicationSelectionScreenState
                 final Medication drug = visible[index];
                 return _MedicationTile(
                   medication: drug,
-                  selected: _selected.contains(drug.name),
+                  dose: _selected[drug.name],
                   onToggle: () => _toggle(drug),
+                  onEditDose: () => _editDose(drug),
                 );
               },
             ),
@@ -123,7 +149,7 @@ class _MedicationSelectionScreenState
   }
 
   void _toggle(Medication drug) {
-    if (_selected.contains(drug.name)) {
+    if (_selected.containsKey(drug.name)) {
       setState(() => _selected.remove(drug.name));
       return;
     }
@@ -140,14 +166,34 @@ class _MedicationSelectionScreenState
       return;
     }
 
-    setState(() => _selected.add(drug.name));
+    // Selecting a medicine offers its usual prescribed dose straight away, so
+    // a patient on a standard dose has nothing further to do.
+    setState(() => _selected[drug.name] = drug.defaultDose);
   }
 
+  Future<void> _editDose(Medication drug) async {
+    final double? chosen = await showDialog<double>(
+      context: context,
+      builder: (BuildContext context) => _DosePickerDialog(
+        medication: drug,
+        current: _selected[drug.name] ?? drug.defaultDose,
+      ),
+    );
+    if (chosen == null || !mounted) return;
+    setState(() => _selected[drug.name] = chosen);
+  }
+
+  /// Seeds a fresh assessment for every selected medication and opens the form.
+  ///
+  /// The schema must be in hand before the form is built, since every field and
+  /// its starting value comes from it. Awaiting the provider here means the
+  /// first attempt absorbs the fetch — later ones are instant, because the
+  /// contract is cached for the session.
   Future<void> _start(List<Medication> all) async {
     // Preserve the backend's ordering rather than tap order, so two patients
     // on the same medicines produce the same list.
     final List<Medication> chosen = all
-        .where((Medication drug) => _selected.contains(drug.name))
+        .where((Medication drug) => _selected.containsKey(drug.name))
         .toList();
     if (chosen.isEmpty || _starting) return;
 
@@ -157,7 +203,11 @@ class _MedicationSelectionScreenState
           await ref.read(assessmentSchemaProvider.future);
       if (!mounted) return;
 
-      ref.read(assessmentControllerProvider.notifier).startAll(chosen, schema);
+      ref.read(assessmentControllerProvider.notifier).startAll(
+            chosen,
+            schema,
+            doses: Map<String, double>.of(_selected),
+          );
       context.go(AppRoutes.assessment);
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -169,16 +219,28 @@ class _MedicationSelectionScreenState
   }
 }
 
+/// One medication: its name, and once selected, its daily dose.
+///
+/// Drug class and permitted dose range are deliberately not shown. A patient
+/// choosing their own tablets recognises the name; the rest was detail written
+/// for a developer reading the API.
 class _MedicationTile extends StatelessWidget {
   const _MedicationTile({
     required this.medication,
-    required this.selected,
+    required this.dose,
     required this.onToggle,
+    required this.onEditDose,
   });
 
   final Medication medication;
-  final bool selected;
+
+  /// Null when the medication is not selected.
+  final double? dose;
+
   final VoidCallback onToggle;
+  final VoidCallback onEditDose;
+
+  bool get _selected => dose != null;
 
   @override
   Widget build(BuildContext context) {
@@ -189,47 +251,96 @@ class _MedicationTile extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: selected ? AppColors.primary : theme.dividerColor,
-          width: selected ? 2 : 1,
+          color: _selected ? AppColors.primary : theme.dividerColor,
+          width: _selected ? 2 : 1,
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-          child: Text(
-            medication.name.substring(0, 1),
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+        contentPadding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
+        leading: Checkbox(
+          value: _selected,
+          onChanged: (_) => onToggle(),
         ),
         title: Text(
           medication.name,
           style: theme.textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w600),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        subtitle: _selected
+            ? Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  medication.doseLabel(dose!),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )
+            : null,
+        trailing: _selected
+            ? IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                tooltip: 'Change the dose',
+                onPressed: onEditDose,
+              )
+            : null,
+        onTap: onToggle,
+        selected: _selected,
+      ),
+    );
+  }
+}
+
+/// Lets the patient pick from the doses this drug is actually prescribed at.
+///
+/// Offering the real doses rather than a slider means the value is always one
+/// the model has seen, and sidesteps rounding: a slider stepping across
+/// amlodipine's 2.5–10 mg range could not land on 2.5 or 7.5 at all.
+class _DosePickerDialog extends StatelessWidget {
+  const _DosePickerDialog({required this.medication, required this.current});
+
+  final Medication medication;
+  final double current;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<double> options = medication.typicalDoses.isEmpty
+        ? <double>[medication.doseMin, medication.defaultDose, medication.doseMax]
+        : medication.typicalDoses;
+
+    return AlertDialog(
+      title: Text(medication.name),
+      contentPadding: const EdgeInsets.only(top: 12, bottom: 8),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView(
+          shrinkWrap: true,
           children: <Widget>[
-            const SizedBox(height: 2),
-            Text(medication.drugClass),
-            const SizedBox(height: 2),
-            Text(
-              medication.doseRangeLabel,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+              child: Text(
+                'How much do you take each day?',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ),
+            for (final double option in options)
+              RadioListTile<double>(
+                value: option,
+                groupValue: current,
+                title: Text(medication.doseLabel(option)),
+                onChanged: (double? selected) =>
+                    Navigator.of(context).pop(selected),
+              ),
           ],
         ),
-        trailing: Checkbox(
-          value: selected,
-          onChanged: (_) => onToggle(),
-        ),
-        onTap: onToggle,
-        selected: selected,
       ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
     );
   }
 }
