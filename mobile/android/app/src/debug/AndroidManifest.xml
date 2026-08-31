@@ -4,4 +4,10 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Android 9 and later refuse plaintext HTTP by default, so a debug build
+         talking to a development backend over http://192.168.x.x fails with no
+         useful error. Permitting it here rather than in the main manifest means
+         release builds keep the protection and must use HTTPS. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
