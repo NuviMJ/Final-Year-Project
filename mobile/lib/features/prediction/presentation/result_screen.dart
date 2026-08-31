@@ -6,21 +6,19 @@ import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/app_state_views.dart';
 import '../../assessment/application/assessment_controller.dart';
+import '../../assessment/domain/duration_band.dart';
 import '../data/prediction_repository.dart';
+import '../domain/assessment_outcome.dart';
 import '../domain/prediction.dart';
 
 /// The outcome of one assessment.
-///
-/// Shows all three class probabilities rather than the winning category alone.
-/// A High result at 0.51 and one at 0.99 mean very different things, and
-/// presenting only the label would hide that distinction from the person it
-/// matters most to.
+
 class ResultScreen extends ConsumerWidget {
   const ResultScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Prediction?> result =
+    final AsyncValue<AssessmentOutcome?> result =
         ref.watch(predictionControllerProvider);
 
     return Scaffold(
@@ -37,12 +35,13 @@ class ResultScreen extends ConsumerWidget {
             error: error,
             onRetry: () => context.go(AppRoutes.assessment),
           ),
-          data: (Prediction? prediction) => prediction == null
-              ? AppErrorView(
-                  error: 'No result to show.',
-                  onRetry: () => context.go(AppRoutes.medications),
-                )
-              : _Result(prediction: prediction),
+          data: (AssessmentOutcome? outcome) =>
+              outcome == null || outcome.isEmpty
+                  ? AppErrorView(
+                      error: 'No result to show.',
+                      onRetry: () => context.go(AppRoutes.medications),
+                    )
+                  : _Result(outcome: outcome),
         ),
       ),
     );
@@ -50,9 +49,15 @@ class ResultScreen extends ConsumerWidget {
 }
 
 class _Result extends ConsumerWidget {
-  const _Result({required this.prediction});
+  const _Result({required this.outcome});
 
-  final Prediction prediction;
+  final AssessmentOutcome outcome;
+
+  /// The medication of greatest concern. Never an average across medications:
+  /// see [AssessmentOutcome] for why that would report the wrong direction.
+  MedicationPrediction get worst => outcome.highest;
+
+  Prediction get prediction => worst.prediction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -88,7 +93,25 @@ class _Result extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        Text(
+          outcome.isSingle
+              ? worst.medication.name
+              : 'Highest risk: ${worst.medication.name}',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        if (!outcome.isSingle) ...<Widget>[
+          const SizedBox(height: 4),
+          Text(
+            outcome.bandSummary,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ],
+        const SizedBox(height: 16),
         Text(
           prediction.summary,
           textAlign: TextAlign.center,
@@ -122,11 +145,12 @@ class _Result extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  // Describes the medication this result is about, which is
+                  // the highest-risk one — not simply the first selected.
                   _Detail(
                     label: 'Medication',
-                    value: '${draft.medication!.name} '
-                        '(${draft.answers['Dosage_mg']} '
-                        '${draft.medication!.doseUnit})',
+                    value: '${worst.medication.name} '
+                        '(${worst.medication.doseLabel(worst.dose)})',
                   ),
                   _Detail(
                     label: 'Side effect',
@@ -135,7 +159,13 @@ class _Result extends ConsumerWidget {
                   ),
                   _Detail(
                     label: 'Treatment so far',
-                    value: '${draft.answers['Treatment_Duration_Days']} days',
+                    // The band the patient chose, not the day count sent to
+                    // the model — they answered the former.
+                    value: DurationBand.forDays(
+                      (draft.answers[DurationBand.fieldName] as num?)
+                              ?.toDouble() ??
+                          0,
+                    ).label,
                   ),
                 ],
               ),

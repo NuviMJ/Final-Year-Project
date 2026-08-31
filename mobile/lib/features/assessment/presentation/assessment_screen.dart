@@ -8,7 +8,7 @@ import '../../../core/widgets/app_state_views.dart';
 import '../../history/data/assessment_store.dart';
 import '../../history/domain/assessment_record.dart';
 import '../../prediction/data/prediction_repository.dart';
-import '../../prediction/domain/prediction.dart';
+import '../../prediction/domain/assessment_outcome.dart';
 import '../application/assessment_controller.dart';
 import '../data/schema_repository.dart';
 import '../domain/field_spec.dart';
@@ -41,7 +41,11 @@ class AssessmentScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(draft.medication!.name),
+        title: Text(
+          draft.medications.length == 1
+              ? draft.medication!.name
+              : '${draft.medications.length} medicines',
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => draft.isFirstStep
@@ -199,9 +203,8 @@ class _Actions extends ConsumerWidget {
       return;
     }
 
-    await ref
-        .read(predictionControllerProvider.notifier)
-        .submit(draft.toRequest());
+    // One request per selected medication, from this one completed form.
+    await ref.read(predictionControllerProvider.notifier).submit(draft);
 
     if (!context.mounted) return;
 
@@ -226,16 +229,24 @@ class _Actions extends ConsumerWidget {
 
     // Persist before navigating, so the result the patient is about to read is
     // already in their history rather than appearing only if they look later.
-    final Prediction? prediction =
+    //
+    // History still stores one entry per assessment, recording the medication
+    // of greatest concern. Storing every medication separately is a change to
+    // the record format and to the trend view, handled on its own.
+    final AssessmentOutcome? outcome =
         ref.read(predictionControllerProvider).value;
-    if (prediction != null && draft.medication != null) {
+    if (outcome != null && !outcome.isEmpty) {
+      final MedicationPrediction worst = outcome.highest;
       await ref.read(assessmentHistoryProvider.notifier).add(
             AssessmentRecord.create(
               takenAt: DateTime.now(),
-              medicationName: draft.medication!.name,
-              doseUnit: draft.medication!.doseUnit,
-              answers: draft.answers,
-              prediction: prediction,
+              medicationName: worst.medication.name,
+              doseUnit: worst.medication.doseUnit,
+              answers: <String, Object>{
+                ...draft.answers,
+                'Dosage_mg': worst.dose,
+              },
+              prediction: worst.prediction,
             ),
           );
     }

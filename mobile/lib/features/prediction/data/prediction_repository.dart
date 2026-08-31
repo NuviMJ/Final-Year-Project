@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../assessment/application/assessment_controller.dart';
+import '../../medications/domain/medication.dart';
+import '../domain/assessment_outcome.dart';
 import '../domain/prediction.dart';
 
 class PredictionRepository {
@@ -15,6 +18,30 @@ class PredictionRepository {
     );
     return Prediction.fromJson(data);
   }
+
+  /// One prediction per medication, from a single completed form.
+  ///
+  /// The model scores one drug at a time, so this issues one request per
+  /// medication. They run in sequence rather than together: the assessment
+  /// covers at most five medicines, the service answers in milliseconds, and
+  /// stopping at the first failure means a rejected field is reported once
+  /// instead of five times over.
+  Future<AssessmentOutcome> predictAll(AssessmentDraft draft) async {
+    final List<MedicationPrediction> results = <MedicationPrediction>[];
+
+    for (final Medication medication in draft.medications) {
+      final Prediction prediction = await predict(draft.toRequestFor(medication));
+      results.add(
+        MedicationPrediction(
+          medication: medication,
+          dose: draft.doseFor(medication),
+          prediction: prediction,
+        ),
+      );
+    }
+
+    return AssessmentOutcome(results: results);
+  }
 }
 
 final Provider<PredictionRepository> predictionRepositoryProvider =
@@ -26,22 +53,23 @@ final Provider<PredictionRepository> predictionRepositoryProvider =
 ///
 /// `AsyncValue` carries the loading, success and failure states together, so
 /// the result screen renders all three without a separate flag for each.
-class PredictionController extends AsyncNotifier<Prediction?> {
+class PredictionController extends AsyncNotifier<AssessmentOutcome?> {
   @override
-  Future<Prediction?> build() async => null;
+  Future<AssessmentOutcome?> build() async => null;
 
-  Future<void> submit(Map<String, dynamic> assessment) async {
-    state = const AsyncValue<Prediction?>.loading();
-    state = await AsyncValue.guard<Prediction?>(
-      () => ref.read(predictionRepositoryProvider).predict(assessment),
+  /// Submit the completed assessment for every medication it covers.
+  Future<void> submit(AssessmentDraft draft) async {
+    state = const AsyncValue<AssessmentOutcome?>.loading();
+    state = await AsyncValue.guard<AssessmentOutcome?>(
+      () => ref.read(predictionRepositoryProvider).predictAll(draft),
     );
   }
 
-  void reset() => state = const AsyncValue<Prediction?>.data(null);
+  void reset() => state = const AsyncValue<AssessmentOutcome?>.data(null);
 }
 
-final AsyncNotifierProvider<PredictionController, Prediction?>
+final AsyncNotifierProvider<PredictionController, AssessmentOutcome?>
     predictionControllerProvider =
-    AsyncNotifierProvider<PredictionController, Prediction?>(
+    AsyncNotifierProvider<PredictionController, AssessmentOutcome?>(
   PredictionController.new,
 );
