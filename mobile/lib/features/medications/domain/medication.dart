@@ -46,6 +46,16 @@ class Medication {
   String get doseRangeLabel =>
       '${_trim(doseMin)}–${_trim(doseMax)} $doseUnit';
 
+  /// The dose offered before the patient changes it: the middle of the doses
+  /// this drug is actually prescribed at, not the arithmetic midpoint of the
+  /// permitted range. "40 mg" is a dose a patient recognises; "45 mg" is not.
+  double get defaultDose => typicalDoses.isEmpty
+      ? (doseMin + doseMax) / 2
+      : typicalDoses[typicalDoses.length ~/ 2];
+
+  /// e.g. "40 mg/day"
+  String doseLabel(double dose) => '${_trim(dose)} $doseUnit';
+
   static String _trim(double value) =>
       value == value.roundToDouble() ? value.toInt().toString() : value.toString();
 }

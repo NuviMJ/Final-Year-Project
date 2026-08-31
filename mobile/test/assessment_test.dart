@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:qolguard/features/assessment/application/assessment_controller.dart';
+import 'package:qolguard/features/assessment/domain/duration_band.dart';
 import 'package:qolguard/features/assessment/domain/field_spec.dart';
 import 'package:qolguard/features/medications/domain/medication.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
@@ -64,7 +65,7 @@ const Medication _atorvastatin = Medication(
   typicalDoses: <double>[10, 20, 40, 80],
 );
 
-/// Four more so a realistic polypharmacy selection can be assembled.
+/// Four more, so a realistic polypharmacy selection can be assembled.
 const Medication _metformin = Medication(
   name: 'Metformin',
   drugClass: 'Non-sulfonylureas',
@@ -205,12 +206,63 @@ void main() {
 
       expect(grouped.toSet().length, grouped.length,
           reason: 'a field is listed in more than one step');
-      expect(grouped.length, 15,
-          reason: 'the model takes 16 user-supplied fields, of which '
-              'Concomitant_Drug_Count is derived rather than asked');
+      expect(grouped.length, 14,
+          reason: 'the model takes 16 user-supplied fields; '
+              'Concomitant_Drug_Count is derived from the medication list and '
+              'Dosage_mg is answered per medication on the selection screen');
       expect(grouped, isNot(contains('Concomitant_Drug_Count')),
           reason: 'asking for it would invite an answer contradicting the '
               'medication list the patient already gave');
+      expect(grouped, isNot(contains('Dosage_mg')),
+          reason: 'one dose field cannot describe four tablets');
+    });
+
+    test('the side effect step follows the patient details step', () {
+      expect(AssessmentStep.all[0].title, 'About you');
+      expect(AssessmentStep.all[1].title, 'Side effect');
+      expect(AssessmentStep.all.length, 3);
+    });
+
+    test('each medication carries its own dose', () {
+      controller.startAll(
+        <Medication>[_atorvastatin, _metformin],
+        schema,
+        doses: <String, double>{'Atorvastatin': 20, 'Metformin': 1500},
+      );
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      expect(draft.doseFor(_atorvastatin), 20.0);
+      expect(draft.doseFor(_metformin), 1500.0);
+      expect(draft.toRequestFor(_atorvastatin)['Dosage_mg'], 20.0);
+      expect(draft.toRequestFor(_metformin)['Dosage_mg'], 1500.0);
+      expect(draft.toRequestFor(_metformin)['Drug_Name'], 'Metformin');
+    });
+
+    test('a medication with no dose given falls back to its usual dose', () {
+      controller.startAll(<Medication>[_atorvastatin, _metformin], schema);
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      expect(draft.doseFor(_atorvastatin), 40.0);
+      expect(draft.doseFor(_metformin), 1000.0);
+    });
+
+    test('every medication shares the answers the patient gave once', () {
+      controller.startAll(<Medication>[_atorvastatin, _metformin], schema);
+      controller.setAnswer('Age', 71.0);
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      expect(draft.toRequestFor(_atorvastatin)['Age'], 71.0);
+      expect(draft.toRequestFor(_metformin)['Age'], 71.0);
+    });
+
+    test('a dose can be changed after the assessment has started', () {
+      controller.startAll(<Medication>[_atorvastatin], schema);
+      controller.setDose('Atorvastatin', 80);
+
+      expect(
+        container.read(assessmentControllerProvider).doseFor(_atorvastatin),
+        80.0,
+      );
     });
 
     test('several medications are carried through the whole assessment', () {
@@ -221,7 +273,7 @@ void main() {
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
 
       expect(draft.medications.length, 3);
-      expect(draft.medications.map((Medication m) => m.name),
+      expect(draft.medications.map((Medication m) => m.name).toList(),
           <String>['Atorvastatin', 'Metformin', 'Omeprazole']);
     });
 
@@ -233,7 +285,8 @@ void main() {
 
       // Three medicines means two others alongside whichever is being scored.
       expect(
-        container.read(assessmentControllerProvider)
+        container
+            .read(assessmentControllerProvider)
             .answers['Concomitant_Drug_Count'],
         2.0,
       );
@@ -243,7 +296,8 @@ void main() {
       controller.start(_atorvastatin, schema);
 
       expect(
-        container.read(assessmentControllerProvider)
+        container
+            .read(assessmentControllerProvider)
             .answers['Concomitant_Drug_Count'],
         0.0,
       );
@@ -252,7 +306,7 @@ void main() {
     test('the other-medicine count saturates at the trained ceiling', () {
       // The model was trained on 0-3 concomitant drugs. Five medications means
       // four others, which it has no way to represent — so the value must be
-      // clamped rather than sent out of range.
+      // clamped rather than sent outside the range the model has seen.
       controller.startAll(
         <Medication>[
           _atorvastatin,
@@ -265,7 +319,8 @@ void main() {
       );
 
       expect(
-        container.read(assessmentControllerProvider)
+        container
+            .read(assessmentControllerProvider)
             .answers['Concomitant_Drug_Count'],
         3.0,
       );
@@ -283,20 +338,19 @@ void main() {
     test('a field absent from the schema is never invented', () {
       // The deployed schema always carries Concomitant_Drug_Count, but a
       // reduced one must not gain a key the model never asked for.
-      final AssessmentSchema reduced = AssessmentSchema.fromJson(
-        <String, dynamic>{
-          'fields': <dynamic>[
-            <String, dynamic>{
-              'name': 'Age',
-              'type': 'number',
-              'required': true,
-              'min': 18.0,
-              'max': 90.0,
-            },
-          ],
-          'class_order': <dynamic>['Low', 'Medium', 'High'],
-        },
-      );
+      final AssessmentSchema reduced =
+          AssessmentSchema.fromJson(<String, dynamic>{
+        'fields': <dynamic>[
+          <String, dynamic>{
+            'name': 'Age',
+            'type': 'number',
+            'required': true,
+            'min': 18.0,
+            'max': 90.0,
+          },
+        ],
+        'class_order': <dynamic>['Low', 'Medium', 'High'],
+      });
 
       controller.startAll(<Medication>[_atorvastatin, _metformin], reduced);
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
@@ -308,6 +362,43 @@ void main() {
 
     test('at most five medications may be assessed together', () {
       expect(AssessmentController.maxMedications, 5);
+    });
+  });
+
+  group('DurationBand', () {
+    test('covers the trained range with no gap and no overlap', () {
+      expect(DurationBand.all.first.minDays, 1);
+      expect(DurationBand.all.last.maxDays, 1825);
+
+      for (int i = 1; i < DurationBand.all.length; i++) {
+        expect(DurationBand.all[i].minDays,
+            DurationBand.all[i - 1].maxDays + 1,
+            reason: 'band ${DurationBand.all[i].label} does not abut the one '
+                'before it');
+      }
+    });
+
+    test('every band sends a value inside its own range', () {
+      for (final DurationBand band in DurationBand.all) {
+        expect(band.contains(band.representativeDays.toDouble()), isTrue,
+            reason: '${band.label} sends a value outside itself');
+      }
+    });
+
+    test('a stored day count maps back to the band the patient chose', () {
+      expect(DurationBand.forDays(45).label, 'Less than 3 months');
+      expect(DurationBand.forDays(136).label, '3 to 6 months');
+      expect(DurationBand.forDays(274).label, '6 to 12 months');
+      expect(DurationBand.forDays(548).label, '1 to 2 years');
+      expect(DurationBand.forDays(1278).label, 'More than 2 years');
+    });
+
+    test('a day count outside the trained range still resolves to a band', () {
+      // The schema midpoint seeds this field at 913 days before the patient
+      // answers, and a stored assessment could predate a range change.
+      expect(DurationBand.forDays(913).label, 'More than 2 years');
+      expect(DurationBand.forDays(0).label, 'Less than 3 months');
+      expect(DurationBand.forDays(99999).label, 'More than 2 years');
     });
   });
 

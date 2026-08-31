@@ -8,11 +8,18 @@ class MedicationRepository {
 
   final ApiClient _client;
 
+  static const Set<String> acuteTherapies = <String>{
+    'Amoxicillin',
+    'Ibuprofen',
+    'Paracetamol',
+  };
+
   Future<List<Medication>> fetchAll() async {
     final List<dynamic> data = await _client.get<List<dynamic>>('/drugs');
     return data
         .map((dynamic entry) =>
             Medication.fromJson(entry as Map<String, dynamic>))
+        .where((Medication drug) => !acuteTherapies.contains(drug.name))
         .toList();
   }
 }
@@ -22,10 +29,6 @@ final Provider<MedicationRepository> medicationRepositoryProvider =
   (Ref ref) => MedicationRepository(ref.watch(apiClientProvider)),
 );
 
-/// The supported medications, fetched once and cached for the session.
-///
-/// The list is fixed by the trained model, so re-fetching it on every visit to
-/// the screen would be wasted traffic.
 final FutureProvider<List<Medication>> medicationsProvider =
     FutureProvider<List<Medication>>(
   (Ref ref) => ref.watch(medicationRepositoryProvider).fetchAll(),

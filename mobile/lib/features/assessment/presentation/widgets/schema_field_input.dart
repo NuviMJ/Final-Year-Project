@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../medications/domain/medication.dart';
+import '../../domain/duration_band.dart';
 import '../../domain/field_spec.dart';
 
-/// Renders one field from the backend schema.
-///
-/// The control is chosen from the field's declared type, not hard-coded per
-/// field, so a retrained model that adds a category or widens a range needs no
-/// change here. The bounds shown are the model's own trained limits, which is
-/// what keeps a 422 from ever being the normal experience.
+
 class SchemaFieldInput extends StatelessWidget {
   const SchemaFieldInput({
     super.key,
@@ -23,8 +19,6 @@ class SchemaFieldInput extends StatelessWidget {
   final Object value;
   final ValueChanged<Object> onChanged;
 
-  /// Supplied for `Dosage_mg` only, whose real limits are per-drug rather than
-  /// the schema's global 2.5–4000 range.
   final Medication? medication;
 
   final String? errorText;
@@ -51,14 +45,30 @@ class SchemaFieldInput extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 8),
-          if (spec.isNumeric) _NumericInput(
-            spec: spec,
-            value: (value as num).toDouble(),
-            min: _min,
-            max: _max,
-            unit: _unit,
-            onChanged: onChanged,
-          ) else if (spec.allowedValues!.length <= 3)
+         
+          if (spec.name == 'Age')
+            _WholeNumberDropdown(
+              value: (value as num).toDouble(),
+              min: spec.min!,
+              max: spec.max!,
+              suffix: 'years',
+              onChanged: onChanged,
+            )
+          else if (spec.name == DurationBand.fieldName)
+            _DurationBandInput(
+              value: (value as num).toDouble(),
+              onChanged: onChanged,
+            )
+          else if (spec.isNumeric)
+            _NumericInput(
+              spec: spec,
+              value: (value as num).toDouble(),
+              min: _min,
+              max: _max,
+              unit: _unit,
+              onChanged: onChanged,
+            )
+          else if (spec.allowedValues!.length <= 3)
             _SegmentedInput(
               options: spec.allowedValues!,
               value: value as String,
@@ -96,6 +106,75 @@ class SchemaFieldInput extends StatelessWidget {
       spec.name == 'Dosage_mg' && medication != null
           ? medication!.doseMax
           : spec.max!;
+}
+
+class _WholeNumberDropdown extends StatelessWidget {
+  const _WholeNumberDropdown({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    this.suffix,
+  });
+
+  final double value;
+  final double min;
+  final double max;
+  final String? suffix;
+  final ValueChanged<Object> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final int low = min.round();
+    final int high = max.round();
+    final int current = value.round().clamp(low, high);
+
+    return DropdownButtonFormField<int>(
+      value: current,
+      isExpanded: true,
+      decoration: const InputDecoration(border: OutlineInputBorder()),
+      items: <DropdownMenuItem<int>>[
+        for (int option = low; option <= high; option++)
+          DropdownMenuItem<int>(
+            value: option,
+            child: Text(suffix == null ? '$option' : '$option $suffix'),
+          ),
+      ],
+      onChanged: (int? selected) {
+        if (selected != null) onChanged(selected.toDouble());
+      },
+    );
+  }
+}
+
+class _DurationBandInput extends StatelessWidget {
+  const _DurationBandInput({required this.value, required this.onChanged});
+
+  final double value;
+  final ValueChanged<Object> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final DurationBand current = DurationBand.forDays(value);
+
+    return DropdownButtonFormField<String>(
+      value: current.label,
+      isExpanded: true,
+      decoration: const InputDecoration(border: OutlineInputBorder()),
+      items: DurationBand.all
+          .map((DurationBand band) => DropdownMenuItem<String>(
+                value: band.label,
+                child: Text(band.label),
+              ))
+          .toList(),
+      onChanged: (String? selected) {
+        if (selected == null) return;
+        final DurationBand band = DurationBand.all
+            .firstWhere((DurationBand candidate) => candidate.label == selected);
+        onChanged(band.representativeDays.toDouble());
+      },
+    );
+  }
 }
 
 class _NumericInput extends StatelessWidget {
