@@ -2,17 +2,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../medications/domain/medication.dart';
 import '../domain/field_spec.dart';
+import '../domain/symptom_report.dart';
 
 class AssessmentStep {
   const AssessmentStep({
     required this.title,
     required this.subtitle,
     required this.fieldNames,
+    this.collectsSymptoms = false,
   });
 
   final String title;
   final String subtitle;
   final List<String> fieldNames;
+
+  /// Whether this step also shows the symptom selector.
+  final bool collectsSymptoms;
 
   static const List<AssessmentStep> all = <AssessmentStep>[
     AssessmentStep(
@@ -20,15 +25,13 @@ class AssessmentStep {
       subtitle: 'Your details, and how long you have been on these medicines',
       fieldNames: <String>['Age', 'Gender', 'Treatment_Duration_Days'],
     ),
+    // Side_Effect and Severity are collected by the symptom selector, which can
+    // report several at once. Seriousness is derived from severity.
     AssessmentStep(
-      title: 'Side effect',
-      subtitle: 'The main effect you have noticed since starting',
-      fieldNames: <String>[
-        'Side_Effect',
-        'Severity',
-        'Seriousness',
-        'Onset_Days',
-      ],
+      title: 'Side effects',
+      subtitle: 'The effects you have noticed since starting',
+      fieldNames: <String>['Onset_Days'],
+      collectsSymptoms: true,
     ),
     AssessmentStep(
       title: 'Daily life',
@@ -52,12 +55,17 @@ class AssessmentDraft {
   const AssessmentDraft({
     this.medications = const <Medication>[],
     this.doses = const <String, double>{},
+    this.symptoms = const <SymptomReport>[],
     this.answers = const <String, Object>{},
     this.stepIndex = 0,
   });
 
   final List<Medication> medications;
   final Map<String, double> doses;
+
+  /// Every effect reported, each with its own severity.
+  final List<SymptomReport> symptoms;
+
   final Map<String, Object> answers;
   final int stepIndex;
 
@@ -74,25 +82,34 @@ class AssessmentDraft {
   AssessmentDraft copyWith({
     List<Medication>? medications,
     Map<String, double>? doses,
+    List<SymptomReport>? symptoms,
     Map<String, Object>? answers,
     int? stepIndex,
   }) {
     return AssessmentDraft(
       medications: medications ?? this.medications,
       doses: doses ?? this.doses,
+      symptoms: symptoms ?? this.symptoms,
       answers: answers ?? this.answers,
       stepIndex: stepIndex ?? this.stepIndex,
     );
   }
 
-  Map<String, dynamic> toRequestFor(Medication medication) =>
+  /// One request: this medication scored against this one reported effect.
+  Map<String, dynamic> toRequestFor(
+    Medication medication,
+    SymptomReport symptom,
+  ) =>
       <String, dynamic>{
         'Drug_Name': medication.name,
         ...answers,
         if (answers.containsKey('Dosage_mg')) 'Dosage_mg': doseFor(medication),
+        if (answers.containsKey('Side_Effect'))
+          'Side_Effect': symptom.sideEffect,
+        if (answers.containsKey('Severity')) 'Severity': symptom.severity,
+        if (answers.containsKey('Seriousness'))
+          'Seriousness': symptom.seriousness,
       };
-
-  Map<String, dynamic> toRequest() => toRequestFor(medication!);
 }
 
 class AssessmentController extends Notifier<AssessmentDraft> {
@@ -130,9 +147,20 @@ class AssessmentController extends Notifier<AssessmentDraft> {
           concomitantCountFor(medications.length);
     }
 
+    final FieldSpec? sideEffect = schema.byName('Side_Effect');
+    final FieldSpec? severity = schema.byName('Severity');
+
     state = AssessmentDraft(
       medications: List<Medication>.unmodifiable(medications),
       doses: Map<String, double>.unmodifiable(resolved),
+      symptoms: sideEffect == null || severity == null
+          ? const <SymptomReport>[]
+          : <SymptomReport>[
+              SymptomReport(
+                sideEffect: sideEffect.allowedValues!.first,
+                severity: severity.allowedValues!.first,
+              ),
+            ],
       answers: answers,
       stepIndex: 0,
     );
@@ -142,6 +170,40 @@ class AssessmentController extends Notifier<AssessmentDraft> {
   void setDose(String medicationName, double dose) {
     state = state.copyWith(
       doses: <String, double>{...state.doses, medicationName: dose},
+    );
+  }
+
+  /// Add or remove a reported effect. At least one must always remain.
+  void toggleSymptom(String sideEffect, String defaultSeverity) {
+    final List<SymptomReport> current = state.symptoms;
+    final bool present =
+        current.any((SymptomReport s) => s.sideEffect == sideEffect);
+
+    if (present) {
+      if (current.length == 1) return;
+      state = state.copyWith(
+        symptoms: current
+            .where((SymptomReport s) => s.sideEffect != sideEffect)
+            .toList(),
+      );
+      return;
+    }
+
+    if (current.length >= SymptomReport.maxPerAssessment) return;
+    state = state.copyWith(
+      symptoms: <SymptomReport>[
+        ...current,
+        SymptomReport(sideEffect: sideEffect, severity: defaultSeverity),
+      ],
+    );
+  }
+
+  void setSymptomSeverity(String sideEffect, String severity) {
+    state = state.copyWith(
+      symptoms: state.symptoms
+          .map((SymptomReport s) =>
+              s.sideEffect == sideEffect ? s.withSeverity(severity) : s)
+          .toList(),
     );
   }
 
@@ -163,8 +225,19 @@ class AssessmentController extends Notifier<AssessmentDraft> {
     }
   }
 
+  static const Set<String> _symptomFields = <String>{
+    'Side_Effect',
+    'Severity',
+    'Seriousness',
+  };
+
   void goToStepContaining(String field) {
     for (int i = 0; i < AssessmentStep.all.length; i++) {
+      if (_symptomFields.contains(field) &&
+          AssessmentStep.all[i].collectsSymptoms) {
+        state = state.copyWith(stepIndex: i);
+        return;
+      }
       if (AssessmentStep.all[i].fieldNames.contains(field)) {
         state = state.copyWith(stepIndex: i);
         return;

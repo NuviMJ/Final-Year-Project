@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qolguard/features/assessment/application/assessment_controller.dart';
 import 'package:qolguard/features/assessment/domain/duration_band.dart';
 import 'package:qolguard/features/assessment/domain/field_spec.dart';
+import 'package:qolguard/features/assessment/domain/onset_band.dart';
+import 'package:qolguard/features/assessment/domain/symptom_report.dart';
 import 'package:qolguard/features/medications/domain/medication.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
 
@@ -44,6 +46,12 @@ final Map<String, dynamic> _schemaJson = <String, dynamic>{
       'type': 'categorical',
       'required': true,
       'allowed_values': <dynamic>['Fatigue', 'Muscle Pain', 'Nausea'],
+    },
+    <String, dynamic>{
+      'name': 'Severity',
+      'type': 'categorical_ordered',
+      'required': true,
+      'allowed_values': <dynamic>['Mild', 'Moderate', 'Severe'],
     },
     <String, dynamic>{
       'name': 'Concomitant_Drug_Count',
@@ -166,8 +174,9 @@ void main() {
       controller.start(_atorvastatin, schema);
       controller.setAnswer('Age', 62.0);
 
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
       final Map<String, dynamic> body =
-          container.read(assessmentControllerProvider).toRequest();
+          draft.toRequestFor(_atorvastatin, draft.symptoms.first);
 
       expect(body['Drug_Name'], 'Atorvastatin');
       expect(body['Age'], 62.0);
@@ -206,20 +215,24 @@ void main() {
 
       expect(grouped.toSet().length, grouped.length,
           reason: 'a field is listed in more than one step');
-      expect(grouped.length, 14,
-          reason: 'the model takes 16 user-supplied fields; '
-              'Concomitant_Drug_Count is derived from the medication list and '
-              'Dosage_mg is answered per medication on the selection screen');
+      expect(grouped.length, 11,
+          reason: 'of the 16 user-supplied fields, Concomitant_Drug_Count is '
+              'derived, Dosage_mg is per medication on the selection screen, '
+              'and Side_Effect, Severity and Seriousness come from the '
+              'symptom selector');
       expect(grouped, isNot(contains('Concomitant_Drug_Count')),
           reason: 'asking for it would invite an answer contradicting the '
               'medication list the patient already gave');
       expect(grouped, isNot(contains('Dosage_mg')),
           reason: 'one dose field cannot describe four tablets');
+      expect(grouped, isNot(contains('Side_Effect')));
+      expect(grouped, isNot(contains('Severity')));
+      expect(grouped, isNot(contains('Seriousness')));
     });
 
     test('the side effect step follows the patient details step', () {
       expect(AssessmentStep.all[0].title, 'About you');
-      expect(AssessmentStep.all[1].title, 'Side effect');
+      expect(AssessmentStep.all[1].title, 'Side effects');
       expect(AssessmentStep.all.length, 3);
     });
 
@@ -233,9 +246,10 @@ void main() {
 
       expect(draft.doseFor(_atorvastatin), 20.0);
       expect(draft.doseFor(_metformin), 1500.0);
-      expect(draft.toRequestFor(_atorvastatin)['Dosage_mg'], 20.0);
-      expect(draft.toRequestFor(_metformin)['Dosage_mg'], 1500.0);
-      expect(draft.toRequestFor(_metformin)['Drug_Name'], 'Metformin');
+      final SymptomReport symptom = draft.symptoms.first;
+      expect(draft.toRequestFor(_atorvastatin, symptom)['Dosage_mg'], 20.0);
+      expect(draft.toRequestFor(_metformin, symptom)['Dosage_mg'], 1500.0);
+      expect(draft.toRequestFor(_metformin, symptom)['Drug_Name'], 'Metformin');
     });
 
     test('a medication with no dose given falls back to its usual dose', () {
@@ -251,8 +265,9 @@ void main() {
       controller.setAnswer('Age', 71.0);
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
 
-      expect(draft.toRequestFor(_atorvastatin)['Age'], 71.0);
-      expect(draft.toRequestFor(_metformin)['Age'], 71.0);
+      final SymptomReport symptom = draft.symptoms.first;
+      expect(draft.toRequestFor(_atorvastatin, symptom)['Age'], 71.0);
+      expect(draft.toRequestFor(_metformin, symptom)['Age'], 71.0);
     });
 
     test('a dose can be changed after the assessment has started', () {
@@ -357,11 +372,133 @@ void main() {
 
       expect(draft.answers.containsKey('Concomitant_Drug_Count'), isFalse);
       expect(draft.answers.containsKey('Dosage_mg'), isFalse);
-      expect(draft.toRequest().keys.length, 2); // Age + Drug_Name
+      expect(draft.symptoms, isEmpty);
     });
 
     test('at most five medications may be assessed together', () {
       expect(AssessmentController.maxMedications, 5);
+    });
+
+    test('an assessment starts with one effect already reported', () {
+      controller.start(_atorvastatin, schema);
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      expect(draft.symptoms.length, 1);
+      expect(draft.symptoms.first.sideEffect, 'Fatigue');
+      expect(draft.symptoms.first.severity, 'Mild');
+    });
+
+    test('several effects can be reported, each with its own severity', () {
+      controller.start(_atorvastatin, schema);
+      controller.toggleSymptom('Nausea', 'Mild');
+      controller.setSymptomSeverity('Nausea', 'Severe');
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      expect(draft.symptoms.length, 2);
+      expect(draft.symptoms[0].severity, 'Mild');
+      expect(draft.symptoms[1].severity, 'Severe');
+    });
+
+    test('the last remaining effect cannot be removed', () {
+      controller.start(_atorvastatin, schema);
+      controller.toggleSymptom('Fatigue', 'Mild');
+
+      expect(container.read(assessmentControllerProvider).symptoms.length, 1);
+    });
+
+    test('no more than three effects are accepted', () {
+      controller.start(_atorvastatin, schema);
+      controller.toggleSymptom('Nausea', 'Mild');
+      controller.toggleSymptom('Muscle Pain', 'Mild');
+
+      expect(
+        container.read(assessmentControllerProvider).symptoms.length,
+        SymptomReport.maxPerAssessment,
+      );
+    });
+
+    test('an effect can be removed once more than one is reported', () {
+      controller.start(_atorvastatin, schema);
+      controller.toggleSymptom('Nausea', 'Mild');
+      controller.toggleSymptom('Fatigue', 'Mild');
+
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+      expect(draft.symptoms.length, 1);
+      expect(draft.symptoms.first.sideEffect, 'Nausea');
+    });
+
+    test('each request carries its own effect and derived seriousness', () {
+      controller.start(_atorvastatin, schema);
+      controller.toggleSymptom('Nausea', 'Mild');
+      controller.setSymptomSeverity('Nausea', 'Severe');
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+
+      final Map<String, dynamic> first =
+          draft.toRequestFor(_atorvastatin, draft.symptoms[0]);
+      final Map<String, dynamic> second =
+          draft.toRequestFor(_atorvastatin, draft.symptoms[1]);
+
+      expect(first['Side_Effect'], 'Fatigue');
+      expect(first['Severity'], 'Mild');
+      expect(second['Side_Effect'], 'Nausea');
+      expect(second['Severity'], 'Severe');
+    });
+
+    test('a rejected effect returns the patient to the symptoms step', () {
+      controller.start(_atorvastatin, schema);
+      controller.next();
+      controller.next();
+
+      controller.goToStepContaining('Severity');
+
+      final int index =
+          container.read(assessmentControllerProvider).stepIndex;
+      expect(AssessmentStep.all[index].collectsSymptoms, isTrue);
+    });
+  });
+
+  group('SymptomReport', () {
+    test('seriousness is derived from severity, never asked', () {
+      expect(
+        const SymptomReport(sideEffect: 'Fatigue', severity: 'Mild')
+            .seriousness,
+        'mild',
+      );
+      expect(
+        const SymptomReport(sideEffect: 'Fatigue', severity: 'Moderate')
+            .seriousness,
+        'moderate',
+      );
+      expect(
+        const SymptomReport(sideEffect: 'Fatigue', severity: 'Severe')
+            .seriousness,
+        'severe',
+      );
+    });
+  });
+
+  group('OnsetBand', () {
+    test('covers the trained range with no gap and no overlap', () {
+      expect(OnsetBand.all.first.minDays, 0);
+      expect(OnsetBand.all.last.maxDays, 31);
+
+      for (int i = 1; i < OnsetBand.all.length; i++) {
+        expect(OnsetBand.all[i].minDays, OnsetBand.all[i - 1].maxDays + 1);
+      }
+    });
+
+    test('every band sends a value inside its own range', () {
+      for (final OnsetBand band in OnsetBand.all) {
+        expect(band.contains(band.representativeDays.toDouble()), isTrue,
+            reason: '${band.label} sends a value outside itself');
+      }
+    });
+
+    test('a stored day count maps back to the band the patient chose', () {
+      expect(OnsetBand.forDays(4).label, 'Within a few days');
+      expect(OnsetBand.forDays(11).label, '1 to 2 weeks');
+      expect(OnsetBand.forDays(23).label, '3 to 4 weeks');
+      expect(OnsetBand.forDays(999).label, '3 to 4 weeks');
     });
   });
 
