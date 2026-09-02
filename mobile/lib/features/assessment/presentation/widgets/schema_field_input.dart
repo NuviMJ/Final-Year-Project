@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../medications/domain/medication.dart';
 import '../../domain/duration_band.dart';
+import '../../domain/onset_band.dart';
 import '../../domain/field_spec.dart';
 
 
@@ -59,6 +60,11 @@ class SchemaFieldInput extends StatelessWidget {
               value: (value as num).toDouble(),
               onChanged: onChanged,
             )
+          else if (spec.name == OnsetBand.fieldName)
+            _OnsetBandInput(
+              value: (value as num).toDouble(),
+              onChanged: onChanged,
+            )
           else if (spec.isNumeric)
             _NumericInput(
               spec: spec,
@@ -93,7 +99,11 @@ class SchemaFieldInput extends StatelessWidget {
     );
   }
 
-  String get _label => spec.name == 'Dosage_mg' ? 'Daily dose' : spec.label;
+  String get _label => switch (spec.name) {
+        'Dosage_mg' => 'Daily dose',
+        'Onset_Days' => 'When did these start?',
+        _ => spec.label,
+      };
 
   String? get _unit => spec.name == 'Dosage_mg' ? medication?.doseUnit : null;
 
@@ -171,6 +181,36 @@ class _DurationBandInput extends StatelessWidget {
         if (selected == null) return;
         final DurationBand band = DurationBand.all
             .firstWhere((DurationBand candidate) => candidate.label == selected);
+        onChanged(band.representativeDays.toDouble());
+      },
+    );
+  }
+}
+
+class _OnsetBandInput extends StatelessWidget {
+  const _OnsetBandInput({required this.value, required this.onChanged});
+
+  final double value;
+  final ValueChanged<Object> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final OnsetBand current = OnsetBand.forDays(value);
+
+    return DropdownButtonFormField<String>(
+      value: current.label,
+      isExpanded: true,
+      decoration: const InputDecoration(border: OutlineInputBorder()),
+      items: OnsetBand.all
+          .map((OnsetBand band) => DropdownMenuItem<String>(
+                value: band.label,
+                child: Text(band.label),
+              ))
+          .toList(),
+      onChanged: (String? selected) {
+        if (selected == null) return;
+        final OnsetBand band = OnsetBand.all
+            .firstWhere((OnsetBand candidate) => candidate.label == selected);
         onChanged(band.representativeDays.toDouble());
       },
     );

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../assessment/application/assessment_controller.dart';
+import '../../assessment/domain/symptom_report.dart';
 import '../../medications/domain/medication.dart';
 import '../domain/assessment_outcome.dart';
 import '../domain/prediction.dart';
@@ -19,25 +20,26 @@ class PredictionRepository {
     return Prediction.fromJson(data);
   }
 
-  /// One prediction per medication, from a single completed form.
+  /// One prediction per medication and reported effect.
   ///
-  /// The model scores one drug at a time, so this issues one request per
-  /// medication. They run in sequence rather than together: the assessment
-  /// covers at most five medicines, the service answers in milliseconds, and
-  /// stopping at the first failure means a rejected field is reported once
-  /// instead of five times over.
+  /// Sequential, stopping at the first failure: every request shares the same
+  /// answers, so a rejected field would fail them all identically.
   Future<AssessmentOutcome> predictAll(AssessmentDraft draft) async {
     final List<MedicationPrediction> results = <MedicationPrediction>[];
 
     for (final Medication medication in draft.medications) {
-      final Prediction prediction = await predict(draft.toRequestFor(medication));
-      results.add(
-        MedicationPrediction(
-          medication: medication,
-          dose: draft.doseFor(medication),
-          prediction: prediction,
-        ),
-      );
+      for (final SymptomReport symptom in draft.symptoms) {
+        final Prediction prediction =
+            await predict(draft.toRequestFor(medication, symptom));
+        results.add(
+          MedicationPrediction(
+            medication: medication,
+            dose: draft.doseFor(medication),
+            symptom: symptom,
+            prediction: prediction,
+          ),
+        );
+      }
     }
 
     return AssessmentOutcome(results: results);

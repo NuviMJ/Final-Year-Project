@@ -13,6 +13,7 @@ import '../application/assessment_controller.dart';
 import '../data/schema_repository.dart';
 import '../domain/field_spec.dart';
 import 'widgets/schema_field_input.dart';
+import 'widgets/symptom_selector.dart';
 
 /// The four-step assessment, built entirely from the backend's `/schema`.
 ///
@@ -121,6 +122,27 @@ class _Form extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             children: <Widget>[
+              if (draft.step.collectsSymptoms)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: SymptomSelector(
+                    options:
+                        schema.byName('Side_Effect')?.allowedValues ??
+                            const <String>[],
+                    severityOptions:
+                        schema.byName('Severity')?.allowedValues ??
+                            const <String>[],
+                    selected: draft.symptoms,
+                    errorText: fieldErrors['Side_Effect'] ??
+                        fieldErrors['Severity'] ??
+                        fieldErrors['Seriousness'],
+                    onToggle: (String name) => controller.toggleSymptom(
+                      name,
+                      schema.byName('Severity')?.allowedValues?.first ?? 'Mild',
+                    ),
+                    onSeverityChanged: controller.setSymptomSeverity,
+                  ),
+                ),
               for (final String name in draft.step.fieldNames)
                 if (schema.byName(name) case final FieldSpec spec)
                   SchemaFieldInput(
