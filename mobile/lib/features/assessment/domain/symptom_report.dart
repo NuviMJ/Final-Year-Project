@@ -26,4 +26,27 @@ class SymptomReport {
   int get hashCode => Object.hash(sideEffect, severity);
 
   static const int maxPerAssessment = 3;
+
+  /// Shown first, being the effects patients report most often.
+  static const List<String> common = <String>[
+    'Fatigue',
+    'Dizziness',
+    'Nausea',
+    'Headache',
+    'Insomnia',
+    'Anxiety',
+    'Stomach Pain',
+    'Muscle Pain',
+  ];
+
+  /// The model's own labels, in words a patient would use.
+  static String labelFor(String value) => switch (value) {
+        'Insomnia' => 'Sleep problems',
+        'Dry Cough' => 'Dry cough',
+        'Dry Mouth' => 'Dry mouth',
+        'Liver Toxicity' => 'Liver problems',
+        'Hypoglycemia' => 'Low blood sugar',
+        'Palpitations' => 'Heart racing',
+        _ => value,
+      };
 }

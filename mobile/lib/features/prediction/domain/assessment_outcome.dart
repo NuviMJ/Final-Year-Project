@@ -28,12 +28,18 @@ class MedicationPrediction {
 /// No combined score is computed: averaging would rank a patient on a risky
 /// medicine plus two safe ones below the same patient on the risky one alone.
 class AssessmentOutcome {
-  const AssessmentOutcome({required this.results});
+  const AssessmentOutcome({
+    required this.results,
+    this.noSideEffectsReported = false,
+  });
 
   /// Every medication-and-effect pair that was scored.
   final List<MedicationPrediction> results;
 
-  bool get isEmpty => results.isEmpty;
+  /// The patient reported no side effects, so the model was not consulted.
+  final bool noSideEffectsReported;
+
+  bool get isEmpty => results.isEmpty && !noSideEffectsReported;
 
   static int _compare(MedicationPrediction a, MedicationPrediction b) {
     final int byRank = b.riskRank.compareTo(a.riskRank);
