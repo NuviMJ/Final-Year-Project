@@ -5,6 +5,7 @@ import 'package:qolguard/features/assessment/application/assessment_controller.d
 import 'package:qolguard/features/assessment/domain/duration_band.dart';
 import 'package:qolguard/features/assessment/domain/field_spec.dart';
 import 'package:qolguard/features/assessment/domain/onset_band.dart';
+import 'package:qolguard/features/assessment/domain/sleep_quality_scale.dart';
 import 'package:qolguard/features/assessment/domain/symptom_report.dart';
 import 'package:qolguard/features/medications/domain/medication.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
@@ -172,6 +173,8 @@ void main() {
 
     test('the request body carries the drug name alongside every answer', () {
       controller.start(_atorvastatin, schema);
+      controller.setHasSideEffects(true);
+      controller.toggleSymptom('Fatigue', 'Mild');
       controller.setAnswer('Age', 62.0);
 
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
@@ -242,6 +245,8 @@ void main() {
         schema,
         doses: <String, double>{'Atorvastatin': 20, 'Metformin': 1500},
       );
+      controller.setHasSideEffects(true);
+      controller.toggleSymptom('Fatigue', 'Mild');
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
 
       expect(draft.doseFor(_atorvastatin), 20.0);
@@ -262,6 +267,8 @@ void main() {
 
     test('every medication shares the answers the patient gave once', () {
       controller.startAll(<Medication>[_atorvastatin, _metformin], schema);
+      controller.setHasSideEffects(true);
+      controller.toggleSymptom('Fatigue', 'Mild');
       controller.setAnswer('Age', 71.0);
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
 
@@ -379,17 +386,29 @@ void main() {
       expect(AssessmentController.maxMedications, 5);
     });
 
-    test('an assessment starts with one effect already reported', () {
+    test('an assessment starts with the side effect question unanswered', () {
       controller.start(_atorvastatin, schema);
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
 
-      expect(draft.symptoms.length, 1);
-      expect(draft.symptoms.first.sideEffect, 'Fatigue');
-      expect(draft.symptoms.first.severity, 'Mild');
+      expect(draft.hasSideEffects, isNull);
+      expect(draft.symptoms, isEmpty);
+    });
+
+    test('answering no clears any effects and skips the model', () {
+      controller.start(_atorvastatin, schema);
+      controller.setHasSideEffects(true);
+      controller.toggleSymptom('Fatigue', 'Mild');
+      controller.setHasSideEffects(false);
+
+      final AssessmentDraft draft = container.read(assessmentControllerProvider);
+      expect(draft.reportsNoSideEffects, isTrue);
+      expect(draft.symptoms, isEmpty);
     });
 
     test('several effects can be reported, each with its own severity', () {
       controller.start(_atorvastatin, schema);
+      controller.setHasSideEffects(true);
+      controller.toggleSymptom('Fatigue', 'Mild');
       controller.toggleSymptom('Nausea', 'Mild');
       controller.setSymptomSeverity('Nausea', 'Severe');
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
@@ -399,15 +418,38 @@ void main() {
       expect(draft.symptoms[1].severity, 'Severe');
     });
 
-    test('the last remaining effect cannot be removed', () {
+    test('a yes cannot be submitted without choosing an effect', () {
       controller.start(_atorvastatin, schema);
-      controller.toggleSymptom('Fatigue', 'Mild');
+      controller.setHasSideEffects(true);
+      controller.next();
 
-      expect(container.read(assessmentControllerProvider).symptoms.length, 1);
+      expect(
+        container.read(assessmentControllerProvider).canLeaveCurrentStep,
+        isFalse,
+      );
+
+      controller.toggleSymptom('Fatigue', 'Mild');
+      expect(
+        container.read(assessmentControllerProvider).canLeaveCurrentStep,
+        isTrue,
+      );
+    });
+
+    test('a no can be submitted with no effects chosen', () {
+      controller.start(_atorvastatin, schema);
+      controller.setHasSideEffects(false);
+      controller.next();
+
+      expect(
+        container.read(assessmentControllerProvider).canLeaveCurrentStep,
+        isTrue,
+      );
     });
 
     test('no more than three effects are accepted', () {
       controller.start(_atorvastatin, schema);
+      controller.setHasSideEffects(true);
+      controller.toggleSymptom('Fatigue', 'Mild');
       controller.toggleSymptom('Nausea', 'Mild');
       controller.toggleSymptom('Muscle Pain', 'Mild');
 
@@ -417,9 +459,11 @@ void main() {
       );
     });
 
-    test('an effect can be removed once more than one is reported', () {
+    test('an effect can be unticked', () {
       controller.start(_atorvastatin, schema);
+      controller.setHasSideEffects(true);
       controller.toggleSymptom('Nausea', 'Mild');
+      controller.toggleSymptom('Fatigue', 'Mild');
       controller.toggleSymptom('Fatigue', 'Mild');
 
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
@@ -429,6 +473,8 @@ void main() {
 
     test('each request carries its own effect and derived seriousness', () {
       controller.start(_atorvastatin, schema);
+      controller.setHasSideEffects(true);
+      controller.toggleSymptom('Fatigue', 'Mild');
       controller.toggleSymptom('Nausea', 'Mild');
       controller.setSymptomSeverity('Nausea', 'Severe');
       final AssessmentDraft draft = container.read(assessmentControllerProvider);
@@ -570,6 +616,34 @@ void main() {
       // or stop a medication.
       expect(high.summary.toLowerCase(), contains('doctor'));
       expect(high.summary.toLowerCase(), isNot(contains('stop taking')));
+    });
+  });
+
+  group('SleepQualityScale', () {
+    test('covers the trained range exactly, with no value outside it', () {
+      expect(SleepQualityScale.covers(4, 9), isTrue);
+      expect(SleepQualityScale.values.first, 4);
+      expect(SleepQualityScale.values.last, 9);
+      expect(SleepQualityScale.values.length, 6);
+    });
+
+    test('refuses to render if the model is retrained on a wider range', () {
+      // Falls back to the slider rather than silently offering 4-9 for 0-10.
+      expect(SleepQualityScale.covers(0, 10), isFalse);
+    });
+
+    test('every value has a word a patient can choose between', () {
+      for (final int value in SleepQualityScale.values) {
+        expect(SleepQualityScale.labels[value], isNotEmpty);
+      }
+      expect(SleepQualityScale.labelFor(4), 'Very poor');
+      expect(SleepQualityScale.labelFor(7), 'Good');
+      expect(SleepQualityScale.labelFor(9), 'Excellent');
+    });
+
+    test('a value outside the scale still resolves to a label', () {
+      expect(SleepQualityScale.labelFor(1), 'Very poor');
+      expect(SleepQualityScale.labelFor(99), 'Excellent');
     });
   });
 }

@@ -56,6 +56,7 @@ class AssessmentDraft {
     this.medications = const <Medication>[],
     this.doses = const <String, double>{},
     this.symptoms = const <SymptomReport>[],
+    this.hasSideEffects,
     this.answers = const <String, Object>{},
     this.stepIndex = 0,
   });
@@ -65,6 +66,18 @@ class AssessmentDraft {
 
   /// Every effect reported, each with its own severity.
   final List<SymptomReport> symptoms;
+
+  /// Null until the patient answers. False skips the model entirely.
+  final bool? hasSideEffects;
+
+  bool get reportsNoSideEffects => hasSideEffects == false;
+
+  /// The symptoms step cannot be left until the yes/no question is answered,
+  /// and a yes needs at least one effect.
+  bool get canLeaveCurrentStep =>
+      !step.collectsSymptoms ||
+      reportsNoSideEffects ||
+      (hasSideEffects == true && symptoms.isNotEmpty);
 
   final Map<String, Object> answers;
   final int stepIndex;
@@ -83,6 +96,7 @@ class AssessmentDraft {
     List<Medication>? medications,
     Map<String, double>? doses,
     List<SymptomReport>? symptoms,
+    bool? hasSideEffects,
     Map<String, Object>? answers,
     int? stepIndex,
   }) {
@@ -90,6 +104,7 @@ class AssessmentDraft {
       medications: medications ?? this.medications,
       doses: doses ?? this.doses,
       symptoms: symptoms ?? this.symptoms,
+      hasSideEffects: hasSideEffects ?? this.hasSideEffects,
       answers: answers ?? this.answers,
       stepIndex: stepIndex ?? this.stepIndex,
     );
@@ -147,22 +162,19 @@ class AssessmentController extends Notifier<AssessmentDraft> {
           concomitantCountFor(medications.length);
     }
 
-    final FieldSpec? sideEffect = schema.byName('Side_Effect');
-    final FieldSpec? severity = schema.byName('Severity');
-
     state = AssessmentDraft(
       medications: List<Medication>.unmodifiable(medications),
       doses: Map<String, double>.unmodifiable(resolved),
-      symptoms: sideEffect == null || severity == null
-          ? const <SymptomReport>[]
-          : <SymptomReport>[
-              SymptomReport(
-                sideEffect: sideEffect.allowedValues!.first,
-                severity: severity.allowedValues!.first,
-              ),
-            ],
       answers: answers,
       stepIndex: 0,
+    );
+  }
+
+  /// Answering "no" clears any effects already picked.
+  void setHasSideEffects(bool value) {
+    state = state.copyWith(
+      hasSideEffects: value,
+      symptoms: value ? state.symptoms : const <SymptomReport>[],
     );
   }
 
@@ -180,7 +192,6 @@ class AssessmentController extends Notifier<AssessmentDraft> {
         current.any((SymptomReport s) => s.sideEffect == sideEffect);
 
     if (present) {
-      if (current.length == 1) return;
       state = state.copyWith(
         symptoms: current
             .where((SymptomReport s) => s.sideEffect != sideEffect)

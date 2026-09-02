@@ -133,6 +133,8 @@ class _Form extends ConsumerWidget {
                         schema.byName('Severity')?.allowedValues ??
                             const <String>[],
                     selected: draft.symptoms,
+                    hasSideEffects: draft.hasSideEffects,
+                    onHasSideEffectsChanged: controller.setHasSideEffects,
                     errorText: fieldErrors['Side_Effect'] ??
                         fieldErrors['Severity'] ??
                         fieldErrors['Seriousness'],
@@ -143,30 +145,41 @@ class _Form extends ConsumerWidget {
                     onSeverityChanged: controller.setSymptomSeverity,
                   ),
                 ),
-              for (final String name in draft.step.fieldNames)
-                if (schema.byName(name) case final FieldSpec spec)
-                  SchemaFieldInput(
-                    spec: spec,
-                    value: draft.answers[name] ?? spec.initialValue(),
-                    medication: draft.medication,
-                    errorText: fieldErrors[name],
-                    onChanged: (Object value) =>
-                        controller.setAnswer(name, value),
-                  ),
+              if (!draft.step.collectsSymptoms ||
+                  draft.hasSideEffects == true)
+                for (final String name in draft.step.fieldNames)
+                  if (schema.byName(name) case final FieldSpec spec)
+                    SchemaFieldInput(
+                      spec: spec,
+                      value: draft.answers[name] ?? spec.initialValue(),
+                      medication: draft.medication,
+                      errorText: fieldErrors[name],
+                      onChanged: (Object value) =>
+                          controller.setAnswer(name, value),
+                    ),
             ],
           ),
         ),
-        _Actions(draft: draft, isSubmitting: submission.isLoading),
+        _Actions(
+          draft: draft,
+          isSubmitting: submission.isLoading,
+          canContinue: draft.canLeaveCurrentStep,
+        ),
       ],
     );
   }
 }
 
 class _Actions extends ConsumerWidget {
-  const _Actions({required this.draft, required this.isSubmitting});
+  const _Actions({
+    required this.draft,
+    required this.isSubmitting,
+    required this.canContinue,
+  });
 
   final AssessmentDraft draft;
   final bool isSubmitting;
+  final bool canContinue;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -194,7 +207,7 @@ class _Actions extends ConsumerWidget {
             Expanded(
               flex: 2,
               child: FilledButton(
-                onPressed: isSubmitting
+                onPressed: isSubmitting || !canContinue
                     ? null
                     : () => _advance(context, ref, controller),
                 child: Padding(
@@ -225,7 +238,13 @@ class _Actions extends ConsumerWidget {
       return;
     }
 
-    // One request per selected medication, from this one completed form.
+    if (draft.reportsNoSideEffects) {
+      ref.read(predictionControllerProvider.notifier).skipForNoSideEffects();
+      if (context.mounted) context.go(AppRoutes.result);
+      return;
+    }
+
+    // One request per selected medication and reported effect.
     await ref.read(predictionControllerProvider.notifier).submit(draft);
 
     if (!context.mounted) return;

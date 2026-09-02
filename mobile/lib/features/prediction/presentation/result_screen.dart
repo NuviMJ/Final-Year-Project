@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_state_views.dart';
 import '../../assessment/application/assessment_controller.dart';
 import '../../assessment/domain/duration_band.dart';
@@ -41,9 +42,98 @@ class ResultScreen extends ConsumerWidget {
                       error: 'No result to show.',
                       onRetry: () => context.go(AppRoutes.medications),
                     )
-                  : _Result(outcome: outcome),
+                  : outcome.noSideEffectsReported
+                      ? const _NoSideEffectsResult()
+                      : _Result(outcome: outcome),
         ),
       ),
+    );
+  }
+}
+
+/// Shown when the patient reported no side effects. The model is not
+/// consulted, so this states what was reported rather than a risk band.
+class _NoSideEffectsResult extends ConsumerWidget {
+  const _NoSideEffectsResult();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
+      children: <Widget>[
+        Center(
+          child: Container(
+            width: 148,
+            height: 148,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.riskLow.withValues(alpha: 0.12),
+              border: Border.all(color: AppColors.riskLow, width: 3),
+            ),
+            child: const Center(
+              child: Text('🎉', style: TextStyle(fontSize: 56)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Good news!',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.headlineSmall
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'You haven\u2019t reported any symptoms or side effects from your '
+          'medication, which is a positive sign for your quality of life.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyLarge,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Keep taking care of yourself and keep following your healthcare '
+          'provider\u2019s advice. 💚',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyMedium
+              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 28),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Icon(Icons.info_outline,
+                  size: 20, color: theme.colorScheme.onSurfaceVariant),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'This reflects what you told us today and is not a health '
+                  'check. ${AppConstants.medicalDisclaimer}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        FilledButton(
+          onPressed: () {
+            ref.read(predictionControllerProvider.notifier).reset();
+            context.go(AppRoutes.medications);
+          },
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('Start another assessment'),
+          ),
+        ),
+      ],
     );
   }
 }

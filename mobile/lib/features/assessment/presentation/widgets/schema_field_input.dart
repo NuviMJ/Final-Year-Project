@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../medications/domain/medication.dart';
 import '../../domain/duration_band.dart';
 import '../../domain/onset_band.dart';
+import '../../domain/sleep_quality_scale.dart';
 import '../../domain/field_spec.dart';
 
 
@@ -48,11 +50,16 @@ class SchemaFieldInput extends StatelessWidget {
           const SizedBox(height: 8),
          
           if (spec.name == 'Age')
-            _WholeNumberDropdown(
+            _WholeNumberField(
               value: (value as num).toDouble(),
               min: spec.min!,
               max: spec.max!,
-              suffix: 'years',
+              onChanged: onChanged,
+            )
+          else if (spec.name == SleepQualityScale.fieldName &&
+              SleepQualityScale.covers(spec.min!, spec.max!))
+            _LabelledScaleInput(
+              value: (value as num).toDouble(),
               onChanged: onChanged,
             )
           else if (spec.name == DurationBand.fieldName)
@@ -118,41 +125,97 @@ class SchemaFieldInput extends StatelessWidget {
           : spec.max!;
 }
 
-class _WholeNumberDropdown extends StatelessWidget {
-  const _WholeNumberDropdown({
+class _WholeNumberField extends StatefulWidget {
+  const _WholeNumberField({
     required this.value,
     required this.min,
     required this.max,
     required this.onChanged,
-    this.suffix,
   });
 
   final double value;
   final double min;
   final double max;
-  final String? suffix;
+  final ValueChanged<Object> onChanged;
+
+  @override
+  State<_WholeNumberField> createState() => _WholeNumberFieldState();
+}
+
+class _WholeNumberFieldState extends State<_WholeNumberField> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.value.round().toString());
+  String? _error;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handle(String raw) {
+    final int low = widget.min.round();
+    final int high = widget.max.round();
+    final int? parsed = int.tryParse(raw.trim());
+
+    // An empty or out-of-range entry keeps the last valid value, so the form
+    // can never submit something the model has not seen.
+    if (parsed == null) {
+      setState(() => _error = raw.trim().isEmpty ? null : 'Enter a number');
+      return;
+    }
+    if (parsed < low || parsed > high) {
+      setState(() => _error = 'Must be between $low and $high');
+      return;
+    }
+    setState(() => _error = null);
+    widget.onChanged(parsed.toDouble());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final int low = widget.min.round();
+    final int high = widget.max.round();
+
+    return TextField(
+      controller: _controller,
+      keyboardType: TextInputType.number,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(3),
+      ],
+      decoration: InputDecoration(
+        border: const OutlineInputBorder(),
+        helperText: 'Between $low and $high',
+        errorText: _error,
+        suffixText: 'years',
+      ),
+      onChanged: _handle,
+    );
+  }
+}
+
+class _LabelledScaleInput extends StatelessWidget {
+  const _LabelledScaleInput({required this.value, required this.onChanged});
+
+  final double value;
   final ValueChanged<Object> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final int low = min.round();
-    final int high = max.round();
-    final int current = value.round().clamp(low, high);
+    final int current = value.round();
 
-    return DropdownButtonFormField<int>(
-      value: current,
-      isExpanded: true,
-      decoration: const InputDecoration(border: OutlineInputBorder()),
-      items: <DropdownMenuItem<int>>[
-        for (int option = low; option <= high; option++)
-          DropdownMenuItem<int>(
-            value: option,
-            child: Text(suffix == null ? '$option' : '$option $suffix'),
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: <Widget>[
+        for (final int option in SleepQualityScale.values)
+          ChoiceChip(
+            label: Text(SleepQualityScale.labels[option]!),
+            selected: option == current,
+            onSelected: (_) => onChanged(option.toDouble()),
           ),
       ],
-      onChanged: (int? selected) {
-        if (selected != null) onChanged(selected.toDouble());
-      },
     );
   }
 }

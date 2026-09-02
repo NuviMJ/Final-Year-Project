@@ -67,6 +67,18 @@ class PredictionController extends AsyncNotifier<AssessmentOutcome?> {
     );
   }
 
+  /// Record an assessment with no reported effects. The model is not called:
+  /// every row it was trained on has a side effect, so it cannot score their
+  /// absence.
+  void skipForNoSideEffects() {
+    state = const AsyncValue<AssessmentOutcome?>.data(
+      AssessmentOutcome(
+        results: <MedicationPrediction>[],
+        noSideEffectsReported: true,
+      ),
+    );
+  }
+
   void reset() => state = const AsyncValue<AssessmentOutcome?>.data(null);
 }
 
