@@ -34,12 +34,16 @@ class TrendSummary {
     required this.points,
     required this.direction,
     required this.change,
+    this.unscoredCount = 0,
   });
 
   final List<TrendPoint> points;
   final TrendDirection direction;
 
   final double change;
+
+  /// Days in the period with no reported effects, which the model never saw.
+  final int unscoredCount;
 
   bool get hasEnoughData => points.length >= 2;
 
@@ -77,13 +81,18 @@ class TrendSummary {
         : records.where((AssessmentRecord record) => record.takenAt
             .isAfter(reference.subtract(Duration(days: period.days!))));
 
+    // A day with no reported effects never reached the model, so it
+    // carries no probability and must not shift the line.
+    final int unscored =
+        inPeriod.where((AssessmentRecord r) => !r.hasPrediction).length;
     final List<TrendPoint> points = inPeriod
+        .where((AssessmentRecord record) => record.hasPrediction)
         .map((AssessmentRecord record) => TrendPoint(
               id: record.id,
               takenAt: record.takenAt,
               probabilityOfHigh:
-                  record.prediction.probabilities['High'] ?? 0,
-              category: record.prediction.riskCategory,
+                  record.prediction!.probabilities['High'] ?? 0,
+              category: record.prediction!.riskCategory,
             ))
         .toList()
       ..sort((TrendPoint a, TrendPoint b) => a.takenAt.compareTo(b.takenAt));
@@ -93,6 +102,7 @@ class TrendSummary {
         points: points,
         direction: TrendDirection.unknown,
         change: 0,
+        unscoredCount: unscored,
       );
     }
 
@@ -109,6 +119,7 @@ class TrendSummary {
               ? TrendDirection.falling
               : TrendDirection.steady,
       change: change,
+      unscoredCount: unscored,
     );
   }
 

@@ -112,7 +112,7 @@ class _HistoryTile extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const SizedBox(height: 2),
-              Text('${record.medicationName} · ${record.doseLabel}'),
+              Text(record.medicinesLabel),
               if (record.sideEffectLabel.isNotEmpty)
                 Text(
                   record.sideEffectLabel,
@@ -156,7 +156,8 @@ class _RiskChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = record.prediction.color;
+    final Color color =
+        record.prediction?.color ?? Theme.of(context).colorScheme.primary;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -166,7 +167,7 @@ class _RiskChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        record.prediction.riskCategory,
+        record.prediction?.riskCategory ?? 'None',
         style: TextStyle(
           color: color,
           fontWeight: FontWeight.w600,

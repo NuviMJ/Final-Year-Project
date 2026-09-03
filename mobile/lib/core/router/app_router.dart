@@ -49,6 +49,54 @@ final GoRouter appRouter = GoRouter(
               name: 'home',
               builder: (_, __) => const HomeScreen(),
             ),
+        GoRoute(
+          path: AppRoutes.medications,
+          name: 'medications',
+          builder: (_, __) => const MedicationSelectionScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.assessment,
+          name: 'assessment',
+          builder: (_, __) => const AssessmentScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.result,
+          name: 'result',
+          builder: (_, __) => const ResultScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.settings,
+          name: 'settings',
+          builder: (_, __) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.learn,
+          name: 'learn',
+          builder: (_, __) => const LearnScreen(),
+          routes: <RouteBase>[
+            GoRoute(
+              path: ':id',
+              name: 'article',
+              builder: (_, GoRouterState state) =>
+                  ArticleScreen(articleId: state.pathParameters['id']!),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.history,
+          name: 'history',
+          builder: (_, __) => const HistoryScreen(),
+          routes: <RouteBase>[
+            // Nested, so /history/<id> keeps the list as its parent and the back
+            // button returns there rather than to the home screen.
+            GoRoute(
+              path: ':id',
+              name: 'pastResult',
+              builder: (_, GoRouterState state) =>
+                  PastResultScreen(recordId: state.pathParameters['id']!),
+            ),
+          ],
+        ),
           ],
         ),
         StatefulShellBranch(
@@ -83,54 +131,6 @@ final GoRouter appRouter = GoRouter(
               builder: (_, __) => const TrendsScreen(),
             ),
           ],
-        ),
-      ],
-    ),
-    GoRoute(
-      path: AppRoutes.medications,
-      name: 'medications',
-      builder: (_, __) => const MedicationSelectionScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.assessment,
-      name: 'assessment',
-      builder: (_, __) => const AssessmentScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.result,
-      name: 'result',
-      builder: (_, __) => const ResultScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.learn,
-      name: 'learn',
-      builder: (_, __) => const LearnScreen(),
-      routes: <RouteBase>[
-        GoRoute(
-          path: ':id',
-          name: 'article',
-          builder: (_, GoRouterState state) =>
-              ArticleScreen(articleId: state.pathParameters['id']!),
-        ),
-      ],
-    ),
-    GoRoute(
-      path: AppRoutes.settings,
-      name: 'settings',
-      builder: (_, __) => const SettingsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.history,
-      name: 'history',
-      builder: (_, __) => const HistoryScreen(),
-      routes: <RouteBase>[
-        // Nested, so /history/<id> keeps the list as its parent and the back
-        // button returns there rather than to the home screen.
-        GoRoute(
-          path: ':id',
-          name: 'pastResult',
-          builder: (_, GoRouterState state) =>
-              PastResultScreen(recordId: state.pathParameters['id']!),
         ),
       ],
     ),

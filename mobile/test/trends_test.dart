@@ -1,10 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:qolguard/features/assessment/domain/symptom_report.dart';
 import 'package:qolguard/features/history/domain/assessment_record.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
 import 'package:qolguard/features/trends/domain/trend_summary.dart';
 
-AssessmentRecord _at(int day, double pHigh, {String? band}) {
+AssessmentRecord _at(
+  int day,
+  double pHigh, {
+  String? band,
+  bool noSideEffects = false,
+}) {
   final String category = band ??
       (pHigh >= 0.6
           ? 'High'
@@ -14,19 +20,33 @@ AssessmentRecord _at(int day, double pHigh, {String? band}) {
 
   return AssessmentRecord.create(
     takenAt: DateTime(2026, 8, day),
-    medicationName: 'Atorvastatin',
-    doseUnit: 'mg/day',
+    medicines: <RecordedMedicine>[
+      RecordedMedicine(
+        name: 'Atorvastatin',
+        doseUnit: 'mg/day',
+        dose: 40,
+        sideEffect: noSideEffects ? null : 'Fatigue',
+        prediction: noSideEffects
+            ? null
+            : Prediction(
+                riskCategory: category,
+                confidence: pHigh,
+                probabilities: <String, double>{
+                  'Low': (1 - pHigh) * 0.6,
+                  'Medium': (1 - pHigh) * 0.4,
+                  'High': pHigh,
+                },
+                modelVersion: 'test',
+              ),
+      ),
+    ],
+    symptoms: noSideEffects
+        ? const <SymptomReport>[]
+        : const <SymptomReport>[
+            SymptomReport(sideEffect: 'Fatigue', severity: 'Mild'),
+          ],
     answers: const <String, Object>{'Dosage_mg': 40.0},
-    prediction: Prediction(
-      riskCategory: category,
-      confidence: pHigh,
-      probabilities: <String, double>{
-        'Low': (1 - pHigh) * 0.6,
-        'Medium': (1 - pHigh) * 0.4,
-        'High': pHigh,
-      },
-      modelVersion: 'test',
-    ),
+    noSideEffectsReported: noSideEffects,
   );
 }
 
@@ -217,6 +237,32 @@ void main() {
           expect(message, isNot(contains('reduce your dose')));
         }
       }
+    });
+  });
+
+  group('Days with no reported effects', () {
+    test('are counted but kept out of the line', () {
+      // They never reached the model, so plotting them would put an invented
+      // number on a chart of model outputs.
+      final TrendSummary summary = TrendSummary.from(_newestFirst(<AssessmentRecord>[
+          _at(1, 0.10),
+          _at(2, 0, noSideEffects: true),
+          _at(3, 0.30),
+        ]), TrendPeriod.all, now: now);
+
+      expect(summary.points.length, 2);
+      expect(summary.unscoredCount, 1);
+      expect(summary.direction, TrendDirection.rising);
+    });
+
+    test('do not drag the trend downwards', () {
+      final TrendSummary summary = TrendSummary.from(_newestFirst(<AssessmentRecord>[
+          _at(1, 0.30),
+          _at(2, 0, noSideEffects: true),
+          _at(3, 0.32),
+        ]), TrendPeriod.all, now: now);
+
+      expect(summary.direction, TrendDirection.steady);
     });
   });
 }

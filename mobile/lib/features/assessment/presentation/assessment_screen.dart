@@ -11,7 +11,9 @@ import '../../prediction/data/prediction_repository.dart';
 import '../../prediction/domain/assessment_outcome.dart';
 import '../application/assessment_controller.dart';
 import '../data/schema_repository.dart';
+import '../../medications/domain/medication.dart';
 import '../domain/field_spec.dart';
+import '../domain/symptom_report.dart';
 import 'widgets/schema_field_input.dart';
 import 'widgets/symptom_selector.dart';
 
@@ -240,6 +242,22 @@ class _Actions extends ConsumerWidget {
 
     if (draft.reportsNoSideEffects) {
       ref.read(predictionControllerProvider.notifier).skipForNoSideEffects();
+      await ref.read(assessmentHistoryProvider.notifier).add(
+            AssessmentRecord.create(
+              takenAt: DateTime.now(),
+              medicines: <RecordedMedicine>[
+                for (final Medication drug in draft.medications)
+                  RecordedMedicine(
+                    name: drug.name,
+                    doseUnit: drug.doseUnit,
+                    dose: draft.doseFor(drug),
+                  ),
+              ],
+              symptoms: const <SymptomReport>[],
+              answers: draft.answers,
+              noSideEffectsReported: true,
+            ),
+          );
       if (context.mounted) context.go(AppRoutes.result);
       return;
     }
@@ -277,17 +295,22 @@ class _Actions extends ConsumerWidget {
     final AssessmentOutcome? outcome =
         ref.read(predictionControllerProvider).value;
     if (outcome != null && !outcome.isEmpty) {
-      final MedicationPrediction worst = outcome.highest;
       await ref.read(assessmentHistoryProvider.notifier).add(
             AssessmentRecord.create(
               takenAt: DateTime.now(),
-              medicationName: worst.medication.name,
-              doseUnit: worst.medication.doseUnit,
-              answers: <String, Object>{
-                ...draft.answers,
-                'Dosage_mg': worst.dose,
-              },
-              prediction: worst.prediction,
+              medicines: <RecordedMedicine>[
+                for (final MedicationPrediction result
+                    in outcome.byRiskDescending)
+                  RecordedMedicine(
+                    name: result.medication.name,
+                    doseUnit: result.medication.doseUnit,
+                    dose: result.dose,
+                    sideEffect: result.symptom.sideEffect,
+                    prediction: result.prediction,
+                  ),
+              ],
+              symptoms: draft.symptoms,
+              answers: draft.answers,
             ),
           );
     }
