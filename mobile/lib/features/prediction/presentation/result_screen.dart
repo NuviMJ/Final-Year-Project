@@ -7,10 +7,10 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_state_views.dart';
 import '../../assessment/application/assessment_controller.dart';
-import '../../assessment/domain/duration_band.dart';
 import '../data/prediction_repository.dart';
 import '../domain/assessment_outcome.dart';
 import '../domain/prediction.dart';
+import 'widgets/result_summary.dart';
 
 /// The outcome of one assessment.
 
@@ -220,49 +220,9 @@ class _Result extends ConsumerWidget {
             value: prediction.probabilities[category] ?? 0,
             isPredicted: category == prediction.riskCategory,
           ),
-        const SizedBox(height: 24),
-        if (draft.medication != null) ...<Widget>[
-          Text(
-            'Based on',
-            style: theme.textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  // Describes the medication this result is about, which is
-                  // the highest-risk one — not simply the first selected.
-                  _Detail(
-                    label: 'Medication',
-                    value: '${worst.medication.name} '
-                        '(${worst.medication.doseLabel(worst.dose)})',
-                  ),
-                  _Detail(
-                    label: 'Side effect',
-                    value: '${draft.answers['Side_Effect']} · '
-                        '${draft.answers['Severity']}',
-                  ),
-                  _Detail(
-                    label: 'Treatment so far',
-                    // The band the patient chose, not the day count sent to
-                    // the model — they answered the former.
-                    value: DurationBand.forDays(
-                      (draft.answers[DurationBand.fieldName] as num?)
-                              ?.toDouble() ??
-                          0,
-                    ).label,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
+        const SizedBox(height: 28),
+        ResultSummary(outcome: outcome, draft: draft),
+        const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -364,35 +324,6 @@ class _ProbabilityBar extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Detail extends StatelessWidget {
-  const _Detail({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            ),
-          ),
-          Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
         ],
       ),
     );

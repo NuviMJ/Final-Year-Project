@@ -211,7 +211,8 @@ class _LabelledScaleInput extends StatelessWidget {
       children: <Widget>[
         for (final int option in SleepQualityScale.values)
           ChoiceChip(
-            label: Text(SleepQualityScale.labels[option]!),
+            label: Text('${SleepQualityScale.faces[option]} '
+                '${SleepQualityScale.labels[option]}'),
             selected: option == current,
             onSelected: (_) => onChanged(option.toDouble()),
           ),
