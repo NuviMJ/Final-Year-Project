@@ -43,10 +43,6 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reminders'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.home),
-        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go(AppRoutes.addReminder),

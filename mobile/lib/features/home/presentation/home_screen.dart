@@ -7,8 +7,6 @@ import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../history/data/assessment_store.dart';
-import '../../reminders/data/reminder_store.dart';
-import '../../reminders/domain/reminder.dart';
 import '../../history/domain/assessment_record.dart';
 import '../../startup/data/health_repository.dart';
 
@@ -21,7 +19,6 @@ class HomeScreen extends ConsumerWidget {
     final AsyncValue<ServiceStatus> service = ref.watch(serviceStatusProvider);
     final List<AssessmentRecord> history = ref.watch(assessmentHistoryProvider);
     final AssessmentRecord? latest = history.isEmpty ? null : history.first;
-    final Reminder? nextReminder = ref.watch(nextReminderProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -72,16 +69,6 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             _ActionTile(
-              icon: Icons.alarm_outlined,
-              title: 'Medication reminders',
-              subtitle: nextReminder == null
-                  ? 'None set up yet'
-                  : 'Next: ${nextReminder.medicationName} at '
-                      '${nextReminder.timeLabel}',
-              onTap: () => context.go(AppRoutes.reminders),
-            ),
-            const SizedBox(height: 8),
-            _ActionTile(
               icon: Icons.history,
               title: 'Your history',
               subtitle: history.isEmpty
@@ -97,16 +84,6 @@ class HomeScreen extends ConsumerWidget {
               title: 'Learn',
               subtitle: 'What your result means, and what affects it',
               onTap: () => context.go(AppRoutes.learn),
-            ),
-            const SizedBox(height: 8),
-            _ActionTile(
-              icon: Icons.show_chart_outlined,
-              title: 'Your trends',
-              subtitle: history.length < 2
-                  ? 'Needs at least two assessments'
-                  : 'How your risk is moving over time',
-              enabled: history.length >= 2,
-              onTap: () => context.go(AppRoutes.trends),
             ),
             const SizedBox(height: 28),
             Container(

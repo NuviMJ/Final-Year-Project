@@ -12,6 +12,7 @@ import '../../features/reminders/presentation/reminders_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/startup/presentation/splash_screen.dart';
 import '../../features/trends/presentation/trends_screen.dart';
+import '../widgets/app_shell.dart';
 
 abstract final class AppRoutes {
   static const String splash = '/';
@@ -35,10 +36,55 @@ final GoRouter appRouter = GoRouter(
       name: 'splash',
       builder: (_, __) => const SplashScreen(),
     ),
-    GoRoute(
-      path: AppRoutes.home,
-      name: 'home',
-      builder: (_, __) => const HomeScreen(),
+    // Home, Reminders and Trends share a bottom bar. Each keeps its own
+    // navigation stack, so switching tabs does not reset the others.
+    StatefulShellRoute.indexedStack(
+      builder: (_, __, StatefulNavigationShell shell) =>
+          AppShell(navigationShell: shell),
+      branches: <StatefulShellBranch>[
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: AppRoutes.home,
+              name: 'home',
+              builder: (_, __) => const HomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: AppRoutes.reminders,
+              name: 'reminders',
+              builder: (_, __) => const RemindersScreen(),
+              routes: <RouteBase>[
+                // 'new' is declared before ':id' so it is matched as the add
+                // screen rather than a reminder whose id is the word "new".
+                GoRoute(
+                  path: 'new',
+                  name: 'addReminder',
+                  builder: (_, __) => const EditReminderScreen(),
+                ),
+                GoRoute(
+                  path: ':id',
+                  name: 'editReminder',
+                  builder: (_, GoRouterState state) =>
+                      EditReminderScreen(reminderId: state.pathParameters['id']),
+                ),
+              ],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: AppRoutes.trends,
+              name: 'trends',
+              builder: (_, __) => const TrendsScreen(),
+            ),
+          ],
+        ),
+      ],
     ),
     GoRoute(
       path: AppRoutes.medications,
@@ -54,31 +100,6 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.result,
       name: 'result',
       builder: (_, __) => const ResultScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.trends,
-      name: 'trends',
-      builder: (_, __) => const TrendsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.reminders,
-      name: 'reminders',
-      builder: (_, __) => const RemindersScreen(),
-      routes: <RouteBase>[
-        // 'new' is declared before ':id' so it is matched as the add screen
-        // rather than being read as a reminder whose id is the word "new".
-        GoRoute(
-          path: 'new',
-          name: 'addReminder',
-          builder: (_, __) => const EditReminderScreen(),
-        ),
-        GoRoute(
-          path: ':id',
-          name: 'editReminder',
-          builder: (_, GoRouterState state) =>
-              EditReminderScreen(reminderId: state.pathParameters['id']),
-        ),
-      ],
     ),
     GoRoute(
       path: AppRoutes.learn,
