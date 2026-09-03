@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:qolguard/core/router/app_router.dart';
 
 import 'package:qolguard/core/network/api_exception.dart';
 import 'package:qolguard/features/medications/domain/medication.dart';
@@ -146,6 +148,56 @@ void main() {
           const PulseLinePainter(progress: 0.6, color: Color(0xFF0F766E)),
         ),
         isTrue,
+      );
+    });
+  });
+
+  group('App shell', () {
+    RouteBase? shellRoute() {
+      for (final RouteBase route in appRouter.configuration.routes) {
+        if (route is StatefulShellRoute) return route;
+      }
+      return null;
+    }
+
+    List<String> pathsIn(StatefulShellBranch branch) => <String>[
+          for (final RouteBase route in branch.routes)
+            if (route is GoRoute) route.path,
+        ];
+
+    test('Home, Reminders and Trends share one tabbed shell', () {
+      final StatefulShellRoute shell = shellRoute()! as StatefulShellRoute;
+
+      expect(shell.branches.length, 3);
+      expect(pathsIn(shell.branches[0]), contains(AppRoutes.home));
+      expect(pathsIn(shell.branches[1]), contains(AppRoutes.reminders));
+      expect(pathsIn(shell.branches[2]), contains(AppRoutes.trends));
+    });
+
+    test('the assessment flow stays outside the shell', () {
+      final List<String> topLevel = <String>[
+        for (final RouteBase route in appRouter.configuration.routes)
+          if (route is GoRoute) route.path,
+      ];
+
+      // A tab bar during the assessment would invite a patient to wander off
+      // part-way through.
+      expect(topLevel, contains(AppRoutes.medications));
+      expect(topLevel, contains(AppRoutes.assessment));
+      expect(topLevel, contains(AppRoutes.result));
+      expect(topLevel, contains(AppRoutes.splash));
+    });
+
+    test('editing a reminder stays inside the Reminders tab', () {
+      final StatefulShellRoute shell = shellRoute()! as StatefulShellRoute;
+      final GoRoute reminders = shell.branches[1].routes.first as GoRoute;
+
+      expect(
+        <String>[
+          for (final RouteBase route in reminders.routes)
+            if (route is GoRoute) route.path,
+        ],
+        <String>['new', ':id'],
       );
     });
   });

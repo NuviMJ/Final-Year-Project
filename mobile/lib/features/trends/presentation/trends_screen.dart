@@ -1,10 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../history/data/assessment_store.dart';
 import '../../history/domain/assessment_record.dart';
@@ -29,10 +27,6 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your trends'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.home),
-        ),
       ),
       body: SafeArea(
         child: ListView(
