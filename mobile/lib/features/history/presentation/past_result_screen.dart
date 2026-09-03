@@ -7,6 +7,12 @@ import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/app_state_views.dart';
 import '../data/assessment_store.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../assessment/domain/duration_band.dart';
+import '../../assessment/domain/onset_band.dart';
+import '../../assessment/domain/sleep_quality_scale.dart';
+import '../../assessment/domain/symptom_report.dart';
+import '../../prediction/domain/prediction.dart';
 import '../domain/assessment_record.dart';
 
 class PastResultScreen extends ConsumerWidget {
@@ -49,7 +55,8 @@ class _Detail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final Color color = record.prediction.color;
+    final Prediction? prediction = record.prediction;
+    final Color color = prediction?.color ?? AppColors.riskLow;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -62,44 +69,48 @@ class _Detail extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Center(
-          child: Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withValues(alpha: 0.12),
-              border: Border.all(color: color, width: 3),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  record.prediction.riskCategory.toUpperCase(),
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.1,
+        if (record.noSideEffectsReported)
+          _NoEffectsBanner(takenAt: record.takenAt)
+        else ...<Widget>[
+          Center(
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withValues(alpha: 0.12),
+                border: Border.all(color: color, width: 3),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    prediction!.riskCategory.toUpperCase(),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
+                    ),
                   ),
-                ),
-                Text('RISK', style: theme.textTheme.labelSmall),
-              ],
+                  Text('RISK', style: theme.textTheme.labelSmall),
+                ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Probabilities',
-          style: theme.textTheme.titleSmall
-              ?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 10),
-        for (final String category in const <String>['Low', 'Medium', 'High'])
-          _Bar(
-            label: category,
-            value: record.prediction.probabilities[category] ?? 0,
-            isPredicted: category == record.prediction.riskCategory,
+          const SizedBox(height: 24),
+          Text(
+            'Probabilities',
+            style: theme.textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
+          const SizedBox(height: 10),
+          for (final String category in const <String>['Low', 'Medium', 'High'])
+            _Bar(
+              label: category,
+              value: prediction.probabilities[category] ?? 0,
+              isPredicted: category == prediction.riskCategory,
+            ),
+        ],
         const SizedBox(height: 24),
         Text(
           'What was reported',
@@ -112,15 +123,35 @@ class _Detail extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                _Row(label: 'Medication', value: record.medicationName),
-                _Row(label: 'Dose', value: record.doseLabel),
+                _GroupTitle(icon: '\u{1F48A}', title: 'Medicines'),
+                for (final RecordedMedicine medicine in record.byRiskDescending)
+                  _Row(
+                    label: medicine.name,
+                    value: medicine.prediction == null
+                        ? medicine.doseLabel
+                        : '${medicine.doseLabel} · '
+                            '${medicine.prediction!.riskCategory}',
+                  ),
+                const SizedBox(height: 10),
+                _GroupTitle(icon: '\u{1FA79}', title: 'Side effects'),
+                if (record.symptoms.isEmpty)
+                  const _Row(label: 'None reported', value: '')
+                else
+                  for (final SymptomReport symptom in record.symptoms)
+                    _Row(
+                      label: SymptomReport.labelFor(symptom.sideEffect),
+                      value: symptom.severity,
+                    ),
+                const SizedBox(height: 10),
+                _GroupTitle(icon: '\u{1F4DD}', title: 'Everything else'),
                 for (final MapEntry<String, Object> entry
                     in record.answers.entries)
-                  if (entry.key != 'Dosage_mg')
+                  if (!_hiddenAnswers.contains(entry.key))
                     _Row(
                       label: _humanise(entry.key),
-                      value: _humanise(entry.value.toString()),
+                      value: _answerLabel(entry.key, entry.value),
                     ),
               ],
             ),
@@ -149,14 +180,109 @@ class _Detail extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        Center(
-          child: Text(
-            'Model ${record.prediction.modelVersion}',
-            style: theme.textTheme.bodySmall
+        if (prediction != null)
+          Center(
+            child: Text(
+              'Model ${prediction.modelVersion}',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Answers shown elsewhere, or sent to the model but never chosen directly.
+const Set<String> _hiddenAnswers = <String>{
+  'Dosage_mg',
+  'Side_Effect',
+  'Severity',
+  'Seriousness',
+  'Concomitant_Drug_Count',
+};
+
+String _answerLabel(String field, Object value) {
+  final double number = value is num ? value.toDouble() : 0;
+  if (value is num && field == DurationBand.fieldName) {
+    return DurationBand.forDays(number).label;
+  }
+  if (value is num && field == OnsetBand.fieldName) {
+    return OnsetBand.forDays(number).label;
+  }
+  if (value is num && field == SleepQualityScale.fieldName) {
+    return '${SleepQualityScale.faces[number.round()] ?? ''} '
+            '${SleepQualityScale.labelFor(number)}'
+        .trim();
+  }
+  return _humanise(value.toString());
+}
+
+class _NoEffectsBanner extends StatelessWidget {
+  const _NoEffectsBanner({required this.takenAt});
+
+  final DateTime takenAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.riskLow.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.riskLow.withValues(alpha: 0.45)),
+      ),
+      child: Column(
+        children: <Widget>[
+          const Text('\u{1F389}', style: TextStyle(fontSize: 40)),
+          const SizedBox(height: 10),
+          Text(
+            'On this day you had no side effects',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Nothing was reported on '
+            '${DateFormat('d MMMM yyyy').format(takenAt)}, so no risk level '
+            'was worked out for that day.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+class _GroupTitle extends StatelessWidget {
+  const _GroupTitle({required this.icon, required this.title});
+
+  final String icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: <Widget>[
+          Text(icon, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
     );
   }
 }

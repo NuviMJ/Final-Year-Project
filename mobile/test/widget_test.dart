@@ -174,18 +174,33 @@ void main() {
       expect(pathsIn(shell.branches[2]), contains(AppRoutes.trends));
     });
 
-    test('the assessment flow stays outside the shell', () {
+    test('every destination but the splash sits inside the shell', () {
+      final StatefulShellRoute shell = shellRoute()! as StatefulShellRoute;
+      final List<String> inShell = <String>[
+        for (final StatefulShellBranch branch in shell.branches)
+          ...pathsIn(branch),
+      ];
+
+      // The bottom bar shows on every screen the patient can reach.
+      for (final String path in <String>[
+        AppRoutes.home,
+        AppRoutes.medications,
+        AppRoutes.assessment,
+        AppRoutes.result,
+        AppRoutes.history,
+        AppRoutes.learn,
+        AppRoutes.settings,
+        AppRoutes.reminders,
+        AppRoutes.trends,
+      ]) {
+        expect(inShell, contains(path), reason: '$path has no bottom bar');
+      }
+
       final List<String> topLevel = <String>[
         for (final RouteBase route in appRouter.configuration.routes)
           if (route is GoRoute) route.path,
       ];
-
-      // A tab bar during the assessment would invite a patient to wander off
-      // part-way through.
-      expect(topLevel, contains(AppRoutes.medications));
-      expect(topLevel, contains(AppRoutes.assessment));
-      expect(topLevel, contains(AppRoutes.result));
-      expect(topLevel, contains(AppRoutes.splash));
+      expect(topLevel, <String>[AppRoutes.splash]);
     });
 
     test('editing a reminder stays inside the Reminders tab', () {

@@ -136,7 +136,7 @@ class _LatestRiskCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final bool hasResult = record != null;
     final Color accent =
-        hasResult ? record!.prediction.color : AppColors.primary;
+        hasResult ? record!.prediction!.color : AppColors.primary;
 
     return InkWell(
       borderRadius: BorderRadius.circular(14),
@@ -177,7 +177,7 @@ class _LatestRiskCard extends StatelessWidget {
                   child: hasResult
                       ? Center(
                           child: Text(
-                            record!.prediction.riskCategory[0],
+                            record!.prediction!.riskCategory[0],
                             style: TextStyle(
                               color: accent,
                               fontWeight: FontWeight.bold,
@@ -195,7 +195,7 @@ class _LatestRiskCard extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         hasResult
-                            ? '${record!.prediction.riskCategory} risk'
+                            ? '${record!.prediction!.riskCategory} risk'
                             : 'No assessments yet',
                         style: theme.textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),

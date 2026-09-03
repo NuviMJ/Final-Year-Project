@@ -229,24 +229,15 @@ class _DurationBandInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DurationBand current = DurationBand.forDays(value);
-
-    return DropdownButtonFormField<String>(
-      value: current.label,
-      isExpanded: true,
-      decoration: const InputDecoration(border: OutlineInputBorder()),
-      items: DurationBand.all
-          .map((DurationBand band) => DropdownMenuItem<String>(
-                value: band.label,
-                child: Text(band.label),
-              ))
-          .toList(),
-      onChanged: (String? selected) {
-        if (selected == null) return;
-        final DurationBand band = DurationBand.all
-            .firstWhere((DurationBand candidate) => candidate.label == selected);
-        onChanged(band.representativeDays.toDouble());
-      },
+    return _BandChips(
+      labels: <String>[for (final DurationBand b in DurationBand.all) b.label],
+      selected: DurationBand.forDays(value).label,
+      onSelected: (String label) => onChanged(
+        DurationBand.all
+            .firstWhere((DurationBand b) => b.label == label)
+            .representativeDays
+            .toDouble(),
+      ),
     );
   }
 }
@@ -259,24 +250,45 @@ class _OnsetBandInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final OnsetBand current = OnsetBand.forDays(value);
+    return _BandChips(
+      labels: <String>[for (final OnsetBand b in OnsetBand.all) b.label],
+      selected: OnsetBand.forDays(value).label,
+      onSelected: (String label) => onChanged(
+        OnsetBand.all
+            .firstWhere((OnsetBand b) => b.label == label)
+            .representativeDays
+            .toDouble(),
+      ),
+    );
+  }
+}
 
-    return DropdownButtonFormField<String>(
-      value: current.label,
-      isExpanded: true,
-      decoration: const InputDecoration(border: OutlineInputBorder()),
-      items: OnsetBand.all
-          .map((OnsetBand band) => DropdownMenuItem<String>(
-                value: band.label,
-                child: Text(band.label),
-              ))
-          .toList(),
-      onChanged: (String? selected) {
-        if (selected == null) return;
-        final OnsetBand band = OnsetBand.all
-            .firstWhere((OnsetBand candidate) => candidate.label == selected);
-        onChanged(band.representativeDays.toDouble());
-      },
+/// Chips rather than a dropdown: a dropdown opens an overlay that the bottom
+/// bar and the action row can squeeze, hiding options.
+class _BandChips extends StatelessWidget {
+  const _BandChips({
+    required this.labels,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<String> labels;
+  final String selected;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: <Widget>[
+        for (final String label in labels)
+          ChoiceChip(
+            label: Text(label),
+            selected: label == selected,
+            onSelected: (_) => onSelected(label),
+          ),
+      ],
     );
   }
 }
