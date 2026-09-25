@@ -11,6 +11,7 @@ import '../../assessment/data/schema_repository.dart';
 import '../../assessment/domain/field_spec.dart';
 import '../data/medication_repository.dart';
 import '../domain/medication.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Step one of the assessment: which medications are being taken, and at what
 /// dose.
@@ -47,21 +48,22 @@ class _MedicationSelectionScreenState
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<List<Medication>> medications =
         ref.watch(medicationsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select your medications'),
+        title: Text(l10n.medicationsSelectYourMedications),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
+          tooltip: l10n.assessmentBack,
           onPressed: () => context.go(AppRoutes.home),
         ),
       ),
       body: SafeArea(
         child: medications.when(
-          loading: () => const AppLoadingView(message: 'Loading medications…'),
+          loading: () => AppLoadingView(message: l10n.medicationsLoadingMedications),
           error: (Object error, StackTrace _) => AppErrorView(
             error: error,
             onRetry: () => ref.invalidate(medicationsProvider),
@@ -244,6 +246,7 @@ class _MedicationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Card(
@@ -281,7 +284,7 @@ class _MedicationTile extends StatelessWidget {
         trailing: _selected
             ? IconButton(
                 icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Change the dose',
+                tooltip: l10n.medicationsChangeTheDose,
                 onPressed: onEditDose,
               )
             : null,
@@ -305,6 +308,7 @@ class _DosePickerDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<double> options = medication.typicalDoses.isEmpty
         ? <double>[medication.doseMin, medication.defaultDose, medication.doseMax]
         : medication.typicalDoses;
@@ -320,7 +324,7 @@ class _DosePickerDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
               child: Text(
-                'How much do you take each day?',
+                l10n.medicationsHowMuchDoYou,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
@@ -338,7 +342,7 @@ class _DosePickerDialog extends StatelessWidget {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.medicationsCancel),
         ),
       ],
     );

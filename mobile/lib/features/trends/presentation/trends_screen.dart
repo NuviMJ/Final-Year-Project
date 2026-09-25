@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../history/data/assessment_store.dart';
 import '../../history/domain/assessment_record.dart';
 import '../domain/trend_summary.dart';
+import '../../../l10n/app_localizations.dart';
 
 class TrendsScreen extends ConsumerStatefulWidget {
   const TrendsScreen({super.key});
@@ -20,13 +21,14 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<AssessmentRecord> records =
         ref.watch(assessmentHistoryProvider);
     final TrendSummary summary = TrendSummary.from(records, _period);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your trends'),
+        title: Text(l10n.trendsYourTrends),
       ),
       body: SafeArea(
         child: ListView(
@@ -87,6 +89,7 @@ class _ChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final List<TrendPoint> points = summary.points;
 
@@ -105,14 +108,13 @@ class _ChartCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Probability of high risk',
+                  l10n.trendsProbabilityOfHighRisk,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'The model\'s own likelihood that your quality of life is at '
-                  'high risk of decline, at each assessment.',
+                  l10n.trendsTheModelsOwnLikelihood,
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
@@ -394,6 +396,7 @@ class _BandBreakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final Map<String, int> counts = summary.bandCounts;
     final int total = summary.points.length;
@@ -402,7 +405,7 @@ class _BandBreakdown extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Assessments in this period',
+          l10n.trendsAssessmentsInThisPeriod,
           style: theme.textTheme.titleSmall
               ?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -458,6 +461,7 @@ class _NotEnoughData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Padding(
@@ -478,8 +482,7 @@ class _NotEnoughData extends StatelessWidget {
           Text(
             // Said plainly rather than shown as an empty chart: a trend from a
             // single point is not a weak trend, it is not a trend at all.
-            'A trend needs at least two assessments to compare. Complete '
-            'another to see how your risk is moving.',
+            l10n.trendsATrendNeedsAt,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),

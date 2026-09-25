@@ -6,6 +6,7 @@ import '../../../assessment/domain/onset_band.dart';
 import '../../../assessment/domain/sleep_quality_scale.dart';
 import '../../../assessment/domain/symptom_report.dart';
 import '../../domain/assessment_outcome.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// What the patient told us, and the risk read back for each medicine.
 class ResultSummary extends StatelessWidget {
@@ -20,13 +21,14 @@ class ResultSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Your summary',
+          l10n.predictionYourSummary,
           style: theme.textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w700),
         ),
@@ -35,7 +37,7 @@ class ResultSummary extends StatelessWidget {
         const SizedBox(height: 16),
         _Section(
           icon: '💊',
-          title: 'Your medicines',
+          title: l10n.predictionYourMedicines,
           rows: <_Row>[
             for (final MedicationPrediction result in outcome.byRiskDescending)
               _Row(
@@ -47,7 +49,7 @@ class ResultSummary extends StatelessWidget {
         if (draft.symptoms.isNotEmpty)
           _Section(
             icon: '🩹',
-            title: 'Side effects you reported',
+            title: l10n.predictionSideEffectsYouReported,
             rows: <_Row>[
               for (final SymptomReport symptom in draft.symptoms)
                 _Row(
@@ -58,7 +60,7 @@ class ResultSummary extends StatelessWidget {
           ),
         _Section(
           icon: '📅',
-          title: 'Treatment',
+          title: l10n.predictionTreatment,
           rows: <_Row>[
             _Row('Taking these', _band(DurationBand.fieldName)),
             if (draft.symptoms.isNotEmpty)
@@ -67,7 +69,7 @@ class ResultSummary extends StatelessWidget {
         ),
         _Section(
           icon: '🌙',
-          title: 'Daily life',
+          title: l10n.predictionDailyLife,
           rows: <_Row>[
             _Row('Sleep', _sleep()),
             _Row('Sleep problems', _text('Sleep_Disorders')),
@@ -125,6 +127,7 @@ class _RiskChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Card(
@@ -135,7 +138,7 @@ class _RiskChart extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Risk by medicine',
+              l10n.predictionRiskByMedicine,
               style: theme.textTheme.titleSmall
                   ?.copyWith(fontWeight: FontWeight.w600),
             ),
@@ -189,7 +192,7 @@ class _RiskChart extends StatelessWidget {
                 ),
               ),
             Text(
-              'Bars show the chance of the High band for each medicine.',
+              l10n.predictionBarsShowTheChance,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),

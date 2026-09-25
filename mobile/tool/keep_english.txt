@@ -1,0 +1,3 @@
+# Terms that stay in English in both languages, one per line.
+# Medicine names are read from ../backend/deploy/drug_reference.json already.
+QoLGuard

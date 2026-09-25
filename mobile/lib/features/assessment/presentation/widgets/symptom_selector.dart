@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/symptom_report.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// The side effects step: whether there are any, and if so which.
 class SymptomSelector extends StatefulWidget {
@@ -35,13 +36,14 @@ class _SymptomSelectorState extends State<SymptomSelector> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Have you experienced any side effects from your medication?',
+          l10n.assessmentHaveYouExperiencedAny,
           style:
               theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -50,7 +52,7 @@ class _SymptomSelectorState extends State<SymptomSelector> {
           children: <Widget>[
             Expanded(
               child: _ChoiceCard(
-                label: 'Yes',
+                label: l10n.assessmentYes,
                 icon: Icons.sentiment_dissatisfied_outlined,
                 selected: widget.hasSideEffects == true,
                 onTap: () => widget.onHasSideEffectsChanged(true),
@@ -59,7 +61,7 @@ class _SymptomSelectorState extends State<SymptomSelector> {
             const SizedBox(width: 12),
             Expanded(
               child: _ChoiceCard(
-                label: 'No',
+                label: l10n.assessmentNo,
                 icon: Icons.sentiment_satisfied_outlined,
                 selected: widget.hasSideEffects == false,
                 onTap: () => widget.onHasSideEffectsChanged(false),
@@ -96,6 +98,7 @@ class _GoodNews extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Container(
@@ -112,15 +115,14 @@ class _GoodNews extends StatelessWidget {
           const Text('🎉', style: TextStyle(fontSize: 40)),
           const SizedBox(height: 10),
           Text(
-            'Oh, that’s good news!',
+            l10n.assessmentOhThatsGoodNews,
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 6),
           Text(
-            'You haven’t experienced any side effects. '
-            'Tell us about your daily life next.',
+            l10n.assessmentYouHaventExperiencedAny,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -154,6 +156,7 @@ class _SymptomList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final Map<String, SymptomReport> chosen = <String, SymptomReport>{
       for (final SymptomReport s in selected) s.sideEffect: s,
@@ -173,7 +176,7 @@ class _SymptomList extends StatelessWidget {
       children: <Widget>[
         const SizedBox(height: 20),
         Text(
-          'Select the side effects you experienced',
+          l10n.assessmentSelectTheSideEffects,
           style:
               theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -207,7 +210,7 @@ class _SymptomList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              'That’s the most you can report at once.',
+              l10n.assessmentThatsTheMostYou,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),

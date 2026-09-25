@@ -10,6 +10,7 @@ import '../../medications/domain/medication.dart';
 import '../data/notification_service.dart';
 import '../data/reminder_store.dart';
 import '../domain/reminder.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Creates or edits a reminder.
 ///
@@ -37,6 +38,7 @@ class _EditReminderScreenState extends ConsumerState<EditReminderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<List<Medication>> medications =
         ref.watch(medicationsProvider);
     _loadExisting();
@@ -52,14 +54,14 @@ class _EditReminderScreenState extends ConsumerState<EditReminderScreen> {
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              tooltip: 'Delete',
+              tooltip: l10n.historyDelete,
               onPressed: _delete,
             ),
         ],
       ),
       body: SafeArea(
         child: medications.when(
-          loading: () => const AppLoadingView(message: 'Loading medications…'),
+          loading: () => AppLoadingView(message: l10n.medicationsLoadingMedications),
           error: (Object error, StackTrace _) => AppErrorView(
             error: error,
             onRetry: () => ref.invalidate(medicationsProvider),
@@ -183,6 +185,7 @@ class _Form extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Column(
@@ -191,7 +194,7 @@ class _Form extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
             children: <Widget>[
-              Text('Medication',
+              Text(l10n.remindersMedication,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
@@ -210,7 +213,7 @@ class _Form extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 28),
-              Text('Time',
+              Text(l10n.remindersTime,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
@@ -246,7 +249,7 @@ class _Form extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 28),
-              Text('Repeat on',
+              Text(l10n.remindersRepeatOn,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 10),
@@ -271,9 +274,9 @@ class _Form extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onSave,
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text('Save reminder'),
+                child: Text(l10n.remindersSaveReminder),
               ),
             ),
           ),

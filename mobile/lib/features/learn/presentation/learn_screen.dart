@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../domain/article.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Short pieces on living with long-term medication.
 ///
@@ -16,11 +17,12 @@ class LearnScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Learn'),
+        title: Text(l10n.actionLearnTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.home),
@@ -33,8 +35,7 @@ class LearnScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 0, 4, 16),
               child: Text(
-                'Short reads on the things the model weighs most heavily, and '
-                'what your results mean.',
+                l10n.learnShortReadsOnThe,
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
@@ -100,6 +101,7 @@ class ArticleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final Article? article = Library.byId(articleId);
 
@@ -111,13 +113,13 @@ class ArticleScreen extends StatelessWidget {
             onPressed: () => context.go(AppRoutes.learn),
           ),
         ),
-        body: const Center(child: Text('That article is no longer available.')),
+        body: Center(child: Text(l10n.learnThatArticleIsNo)),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Learn'),
+        title: Text(l10n.actionLearnTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.learn),

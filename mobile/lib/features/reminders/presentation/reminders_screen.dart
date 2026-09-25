@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../data/notification_service.dart';
 import '../data/reminder_store.dart';
 import '../domain/reminder.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Scheduled medication reminders.
 ///
@@ -38,16 +39,17 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<Reminder> reminders = ref.watch(remindersProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reminders'),
+        title: Text(l10n.navReminders),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go(AppRoutes.addReminder),
         icon: const Icon(Icons.add),
-        label: const Text('Add reminder'),
+        label: Text(l10n.remindersAddReminder),
       ),
       body: SafeArea(
         child: Column(
@@ -94,6 +96,7 @@ class _PermissionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Container(
@@ -115,20 +118,19 @@ class _PermissionBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Notifications are turned off',
+                  l10n.remindersNotificationsAreTurnedOff,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Your reminders are saved, but nothing will alert you until '
-                  'you allow notifications.',
+                  l10n.remindersYourRemindersAreSaved,
                   style: theme.textTheme.bodySmall,
                 ),
                 const SizedBox(height: 8),
                 FilledButton.tonal(
                   onPressed: onGrant,
-                  child: const Text('Allow notifications'),
+                  child: Text(l10n.remindersAllowNotifications),
                 ),
               ],
             ),
@@ -144,6 +146,7 @@ class _UnsupportedBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Container(
@@ -160,8 +163,7 @@ class _UnsupportedBanner extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Reminders can be set up here, but only fire on an Android '
-              'device.',
+              l10n.remindersRemindersCanBeSet,
               style: theme.textTheme.bodySmall,
             ),
           ),
@@ -176,6 +178,7 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Center(
@@ -188,13 +191,13 @@ class _Empty extends StatelessWidget {
                 size: 46, color: theme.colorScheme.onSurfaceVariant),
             const SizedBox(height: 16),
             Text(
-              'No reminders yet',
+              l10n.remindersNoRemindersYet,
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             Text(
-              'Add one to be reminded when a medication is due.',
+              l10n.remindersAddOneToBe,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),

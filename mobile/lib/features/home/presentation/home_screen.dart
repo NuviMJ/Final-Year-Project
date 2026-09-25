@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/config/app_constants.dart';
+import '../../../core/localization/language_switch.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../history/data/assessment_store.dart';
 import '../../history/domain/assessment_record.dart';
 import '../../startup/data/health_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -16,6 +18,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<ServiceStatus> service = ref.watch(serviceStatusProvider);
     final List<AssessmentRecord> history = ref.watch(assessmentHistoryProvider);
     final AssessmentRecord? latest = history.isEmpty ? null : history.first;
@@ -38,16 +41,18 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Quality of life, guarded',
+                        l10n.appTagline,
                         style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
                 ),
+                const LanguageSwitch(),
+                const SizedBox(width: 4),
                 IconButton(
                   icon: const Icon(Icons.settings_outlined),
-                  tooltip: 'Settings',
+                  tooltip: l10n.settingsTitle,
                   onPressed: () => context.go(AppRoutes.settings),
                 ),
               ],
@@ -56,33 +61,32 @@ class HomeScreen extends ConsumerWidget {
             _LatestRiskCard(record: latest),
             const SizedBox(height: 24),
             Text(
-              'Do next',
+              l10n.doNext,
               style: theme.textTheme.titleSmall
                   ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 10),
             _ActionTile(
               icon: Icons.assignment_outlined,
-              title: 'Start an assessment',
-              subtitle: 'Four short steps, about two minutes',
+              title: l10n.actionAssessTitle,
+              subtitle: l10n.actionAssessSubtitle,
               onTap: () => context.go(AppRoutes.medications),
             ),
             const SizedBox(height: 8),
             _ActionTile(
               icon: Icons.history,
-              title: 'Your history',
+              title: l10n.actionHistoryTitle,
               subtitle: history.isEmpty
-                  ? 'Nothing recorded yet'
-                  : '${history.length} assessment'
-                      '${history.length == 1 ? '' : 's'} on this device',
+                  ? l10n.historyNothingYet
+                  : l10n.historyOnDevice(history.length),
               enabled: history.isNotEmpty,
               onTap: () => context.go(AppRoutes.history),
             ),
             const SizedBox(height: 8),
             _ActionTile(
               icon: Icons.menu_book_outlined,
-              title: 'Learn',
-              subtitle: 'What your result means, and what affects it',
+              title: l10n.actionLearnTitle,
+              subtitle: l10n.actionLearnSubtitle,
               onTap: () => context.go(AppRoutes.learn),
             ),
             const SizedBox(height: 28),
@@ -112,7 +116,7 @@ class HomeScreen extends ConsumerWidget {
               child: Text(
                 service.maybeWhen(
                   data: (ServiceStatus status) =>
-                      'Model ${status.modelVersion}',
+                      l10n.modelVersion(status.modelVersion),
                   orElse: () => '',
                 ),
                 style: theme.textTheme.bodySmall
@@ -134,6 +138,7 @@ class _LatestRiskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool hasResult = record != null;
     final Color accent =
         hasResult ? record!.prediction!.color : AppColors.primary;
@@ -157,7 +162,7 @@ class _LatestRiskCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'LATEST RESULT',
+              l10n.latestResultLabel,
               style: theme.textTheme.labelSmall?.copyWith(
                 letterSpacing: 1.1,
                 color: theme.colorScheme.onSurfaceVariant,
@@ -195,8 +200,8 @@ class _LatestRiskCard extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         hasResult
-                            ? '${record!.prediction!.riskCategory} risk'
-                            : 'No assessments yet',
+                            ? l10n.riskLevel(record!.prediction!.riskCategory)
+                            : l10n.noAssessmentsYet,
                         style: theme.textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
@@ -205,7 +210,7 @@ class _LatestRiskCard extends StatelessWidget {
                         hasResult
                             ? '${record!.medicationName} · '
                                 '${DateFormat('d MMM, HH:mm').format(record!.takenAt)}'
-                            : 'Complete one to see your quality-of-life risk here.',
+                            : l10n.completeOnePrompt,
                         style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant),
                       ),

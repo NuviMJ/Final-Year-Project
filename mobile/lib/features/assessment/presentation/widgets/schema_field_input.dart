@@ -6,6 +6,7 @@ import '../../domain/duration_band.dart';
 import '../../domain/onset_band.dart';
 import '../../domain/sleep_quality_scale.dart';
 import '../../domain/field_spec.dart';
+import '../../../../l10n/app_localizations.dart';
 
 
 class SchemaFieldInput extends StatelessWidget {
@@ -174,6 +175,7 @@ class _WholeNumberFieldState extends State<_WholeNumberField> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final int low = widget.min.round();
     final int high = widget.max.round();
 
@@ -188,7 +190,7 @@ class _WholeNumberFieldState extends State<_WholeNumberField> {
         border: const OutlineInputBorder(),
         helperText: 'Between $low and $high',
         errorText: _error,
-        suffixText: 'years',
+        suffixText: l10n.assessmentYears,
       ),
       onChanged: _handle,
     );

@@ -16,6 +16,7 @@ import '../domain/field_spec.dart';
 import '../domain/symptom_report.dart';
 import 'widgets/schema_field_input.dart';
 import 'widgets/symptom_selector.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// The four-step assessment, built entirely from the backend's `/schema`.
 ///
@@ -27,6 +28,7 @@ class AssessmentScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<AssessmentSchema> schema =
         ref.watch(assessmentSchemaProvider);
     final AssessmentDraft draft = ref.watch(assessmentControllerProvider);
@@ -34,9 +36,9 @@ class AssessmentScreen extends ConsumerWidget {
     if (draft.medication == null) {
       // Reached by deep link or hot restart without a medication chosen.
       return Scaffold(
-        appBar: AppBar(title: const Text('Assessment')),
+        appBar: AppBar(title: Text(l10n.assessmentAssessment)),
         body: AppErrorView(
-          error: 'No medication selected.',
+          error: l10n.assessmentNoMedicationSelected,
           onRetry: () => context.go(AppRoutes.medications),
         ),
       );
@@ -58,7 +60,7 @@ class AssessmentScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: schema.when(
-          loading: () => const AppLoadingView(message: 'Loading questions…'),
+          loading: () => AppLoadingView(message: l10n.assessmentLoadingQuestions),
           error: (Object error, StackTrace _) => AppErrorView(
             error: error,
             onRetry: () => ref.invalidate(assessmentSchemaProvider),
@@ -185,6 +187,7 @@ class _Actions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AssessmentController controller =
         ref.read(assessmentControllerProvider.notifier);
 
@@ -198,9 +201,9 @@ class _Actions extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: isSubmitting ? null : controller.previous,
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Back'),
+                    child: Text(l10n.assessmentBack),
                   ),
                 ),
               ),

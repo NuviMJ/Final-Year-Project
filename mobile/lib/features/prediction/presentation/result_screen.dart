@@ -11,6 +11,7 @@ import '../data/prediction_repository.dart';
 import '../domain/assessment_outcome.dart';
 import '../domain/prediction.dart';
 import 'widgets/result_summary.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// The outcome of one assessment.
 
@@ -19,18 +20,19 @@ class ResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<AssessmentOutcome?> result =
         ref.watch(predictionControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your result'),
+        title: Text(l10n.predictionYourResult),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
         child: result.when(
-          loading: () => const AppLoadingView(
-            message: 'Analyzing your health information…',
+          loading: () => AppLoadingView(
+            message: l10n.predictionAnalyzingYourHealthInformation,
           ),
           error: (Object error, StackTrace _) => AppErrorView(
             error: error,
@@ -39,7 +41,7 @@ class ResultScreen extends ConsumerWidget {
           data: (AssessmentOutcome? outcome) =>
               outcome == null || outcome.isEmpty
                   ? AppErrorView(
-                      error: 'No result to show.',
+                      error: l10n.predictionNoResultToShow,
                       onRetry: () => context.go(AppRoutes.medications),
                     )
                   : outcome.noSideEffectsReported
@@ -58,6 +60,7 @@ class _NoSideEffectsResult extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return ListView(
@@ -79,22 +82,20 @@ class _NoSideEffectsResult extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Good news!',
+          l10n.predictionGoodNews,
           textAlign: TextAlign.center,
           style: theme.textTheme.headlineSmall
               ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Text(
-          'You haven\u2019t reported any symptoms or side effects from your '
-          'medication, which is a positive sign for your quality of life.',
+          l10n.predictionYouHaventReportedAny,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge,
         ),
         const SizedBox(height: 10),
         Text(
-          'Keep taking care of yourself and keep following your healthcare '
-          'provider\u2019s advice. 💚',
+          l10n.predictionKeepTakingCareOf,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -128,9 +129,9 @@ class _NoSideEffectsResult extends ConsumerWidget {
             ref.read(predictionControllerProvider.notifier).reset();
             context.go(AppRoutes.medications);
           },
-          child: const Padding(
+          child: Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('Start another assessment'),
+            child: Text(l10n.predictionStartAnotherAssessment),
           ),
         ),
       ],
@@ -151,6 +152,7 @@ class _Result extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final AssessmentDraft draft = ref.watch(assessmentControllerProvider);
 
@@ -178,7 +180,7 @@ class _Result extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text('RISK', style: theme.textTheme.labelMedium),
+                Text(l10n.historyRisk, style: theme.textTheme.labelMedium),
               ],
             ),
           ),
@@ -209,7 +211,7 @@ class _Result extends ConsumerWidget {
         ),
         const SizedBox(height: 28),
         Text(
-          'How confident is this?',
+          l10n.predictionHowConfidentIsThis,
           style: theme.textTheme.titleSmall
               ?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -250,9 +252,9 @@ class _Result extends ConsumerWidget {
             ref.read(predictionControllerProvider.notifier).reset();
             context.go(AppRoutes.medications);
           },
-          child: const Padding(
+          child: Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('Start another assessment'),
+            child: Text(l10n.predictionStartAnotherAssessment),
           ),
         ),
         const SizedBox(height: 12),

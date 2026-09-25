@@ -1,0 +1,23 @@
+{
+  "total": 122,
+  "untranslated": [
+    "assessmentSelectTheSideEffects",
+    "historyRisk",
+    "historySideEffects",
+    "medicationsChangeTheDose",
+    "medicationsHowMuchDoYou",
+    "predictionRiskByMedicine",
+    "predictionSideEffectsYouReported",
+    "trendsProbabilityOfHighRisk"
+  ],
+  "clinical_needing_review": [
+    "assessmentSelectTheSideEffects",
+    "historyRisk",
+    "historySideEffects",
+    "medicationsChangeTheDose",
+    "medicationsHowMuchDoYou",
+    "predictionRiskByMedicine",
+    "predictionSideEffectsYouReported",
+    "trendsProbabilityOfHighRisk"
+  ]
+}

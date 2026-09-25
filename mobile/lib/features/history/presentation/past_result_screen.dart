@@ -14,6 +14,7 @@ import '../../assessment/domain/sleep_quality_scale.dart';
 import '../../assessment/domain/symptom_report.dart';
 import '../../prediction/domain/prediction.dart';
 import '../domain/assessment_record.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PastResultScreen extends ConsumerWidget {
   const PastResultScreen({super.key, required this.recordId});
@@ -22,6 +23,7 @@ class PastResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<AssessmentRecord> records = ref.watch(assessmentHistoryProvider);
     final AssessmentRecord? record = records
         .where((AssessmentRecord candidate) => candidate.id == recordId)
@@ -29,7 +31,7 @@ class PastResultScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Past result'),
+        title: Text(l10n.historyPastResult),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.history),
@@ -38,7 +40,7 @@ class PastResultScreen extends ConsumerWidget {
       body: SafeArea(
         child: record == null
             ? AppErrorView(
-                error: 'That assessment is no longer stored on this device.',
+                error: l10n.historyThatAssessmentIsNo,
                 onRetry: () => context.go(AppRoutes.history),
               )
             : _Detail(record: record),
@@ -54,6 +56,7 @@ class _Detail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final Prediction? prediction = record.prediction;
     final Color color = prediction?.color ?? AppColors.riskLow;
@@ -92,14 +95,14 @@ class _Detail extends StatelessWidget {
                       letterSpacing: 1.1,
                     ),
                   ),
-                  Text('RISK', style: theme.textTheme.labelSmall),
+                  Text(l10n.historyRisk, style: theme.textTheme.labelSmall),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 24),
           Text(
-            'Probabilities',
+            l10n.historyProbabilities,
             style: theme.textTheme.titleSmall
                 ?.copyWith(fontWeight: FontWeight.w600),
           ),
@@ -113,7 +116,7 @@ class _Detail extends StatelessWidget {
         ],
         const SizedBox(height: 24),
         Text(
-          'What was reported',
+          l10n.historyWhatWasReported,
           style: theme.textTheme.titleSmall
               ?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -125,7 +128,7 @@ class _Detail extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                _GroupTitle(icon: '\u{1F48A}', title: 'Medicines'),
+                _GroupTitle(icon: '\u{1F48A}', title: l10n.historyMedicines),
                 for (final RecordedMedicine medicine in record.byRiskDescending)
                   _Row(
                     label: medicine.name,
@@ -135,9 +138,9 @@ class _Detail extends StatelessWidget {
                             '${medicine.prediction!.riskCategory}',
                   ),
                 const SizedBox(height: 10),
-                _GroupTitle(icon: '\u{1FA79}', title: 'Side effects'),
+                _GroupTitle(icon: '\u{1FA79}', title: l10n.historySideEffects),
                 if (record.symptoms.isEmpty)
-                  const _Row(label: 'None reported', value: '')
+                  _Row(label: l10n.historyNoneReported, value: '')
                 else
                   for (final SymptomReport symptom in record.symptoms)
                     _Row(
@@ -145,7 +148,7 @@ class _Detail extends StatelessWidget {
                       value: symptom.severity,
                     ),
                 const SizedBox(height: 10),
-                _GroupTitle(icon: '\u{1F4DD}', title: 'Everything else'),
+                _GroupTitle(icon: '\u{1F4DD}', title: l10n.historyEverythingElse),
                 for (final MapEntry<String, Object> entry
                     in record.answers.entries)
                   if (!_hiddenAnswers.contains(entry.key))
@@ -225,6 +228,7 @@ class _NoEffectsBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Container(
@@ -240,7 +244,7 @@ class _NoEffectsBanner extends StatelessWidget {
           const Text('\u{1F389}', style: TextStyle(fontSize: 40)),
           const SizedBox(height: 10),
           Text(
-            'On this day you had no side effects',
+            l10n.historyOnThisDayYou,
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w700),
