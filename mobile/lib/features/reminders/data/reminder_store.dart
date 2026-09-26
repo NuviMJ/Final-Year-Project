@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/localization/locale_store.dart';
 import '../../history/data/assessment_store.dart';
 import '../domain/reminder.dart';
 import 'notification_service.dart';
@@ -58,7 +59,13 @@ final Provider<ReminderStore> reminderStoreProvider =
 /// the list on screen and the alarms that will actually fire cannot drift apart.
 class Reminders extends Notifier<List<Reminder>> {
   @override
-  List<Reminder> build() => ref.watch(reminderStoreProvider).readAll();
+  List<Reminder> build() {
+    // Scheduled notifications keep their text, so rewrite them on a switch.
+    ref.listen(localeProvider, (AppLanguage? previous, AppLanguage next) {
+      if (previous != next) rescheduleAll();
+    });
+    return ref.watch(reminderStoreProvider).readAll();
+  }
 
   Future<void> add(Reminder reminder) async {
     final List<Reminder> updated = <Reminder>[...state, reminder];

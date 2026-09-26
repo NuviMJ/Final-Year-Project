@@ -578,4 +578,43 @@ class AppLocalizationsSi extends AppLocalizations {
 
   @override
   String get medicationsSearchByNameOr => 'නම හෝ ඖෂධ වර්ගය අනුව සොයන්න';
+
+  @override
+  String get errorUnreachableTitle => 'සේවාදායකයට සම්බන්ධ විය නොහැක';
+
+  @override
+  String get errorGenericTitle => 'යමක් වැරදී ඇත';
+
+  @override
+  String get errorUnreachable =>
+      'QoLGuard සේවාදායකයට සම්බන්ධ විය නොහැක. එය ක්‍රියාත්මක වන බව සහ යෙදුම නිවැරදි ලිපිනයට යොමු කර ඇති බව පරීක්ෂා කරන්න.';
+
+  @override
+  String get errorTimeout =>
+      'සේවාදායකය ප්‍රතිචාර දක්වන්නට වැඩි කාලයක් ගත්තා. කරුණාකර නැවත උත්සාහ කරන්න.';
+
+  @override
+  String get errorCancelled => 'ඉල්ලීම අවලංගු කළා.';
+
+  @override
+  String get errorValidation =>
+      'ඇතුළත් කළ සමහර විස්තර පිළිගත් පරාසයෙන් පිටත පවතී.';
+
+  @override
+  String get errorNotSupported => 'එම ඖෂධයට සහාය නොදක්වේ.';
+
+  @override
+  String get errorServer =>
+      'සේවාදායකයට ඉල්ලීම සම්පූර්ණ කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.';
+
+  @override
+  String get assessmentCouldNotGetResult => 'ප්‍රතිඵලයක් ලබා ගත නොහැකි විය.';
+
+  @override
+  String remindersNotificationTitle(String medicine) {
+    return 'ඔබගේ $medicine ගැනීමට කාලයයි';
+  }
+
+  @override
+  String get remindersNotificationBody => 'ගත් පසු මෙය තට්ටු කරන්න.';
 }

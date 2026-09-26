@@ -588,4 +588,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get medicationsSearchByNameOr => 'Search by name or drug class';
+
+  @override
+  String get errorUnreachableTitle => 'Cannot reach the server';
+
+  @override
+  String get errorGenericTitle => 'Something went wrong';
+
+  @override
+  String get errorUnreachable =>
+      'Cannot reach the QoLGuard server. Check that it is running and that the app is pointed at the right address.';
+
+  @override
+  String get errorTimeout =>
+      'The server took too long to respond. Please try again.';
+
+  @override
+  String get errorCancelled => 'The request was cancelled.';
+
+  @override
+  String get errorValidation =>
+      'Some of the details entered are outside the accepted range.';
+
+  @override
+  String get errorNotSupported => 'That medication is not supported.';
+
+  @override
+  String get errorServer =>
+      'The server could not complete the request. Please try again.';
+
+  @override
+  String get assessmentCouldNotGetResult => 'Could not get a result.';
+
+  @override
+  String remindersNotificationTitle(String medicine) {
+    return 'Time for your $medicine';
+  }
+
+  @override
+  String get remindersNotificationBody => 'Tap when you have taken it.';
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/api_error_text.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -213,7 +214,8 @@ class _MedicationSelectionScreenState
     } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error.message)));
+          .showSnackBar(SnackBar(
+              content: Text(error.localized(AppLocalizations.of(context)))));
     } finally {
       if (mounted) setState(() => _starting = false);
     }

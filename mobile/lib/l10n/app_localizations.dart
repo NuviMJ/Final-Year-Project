@@ -1063,6 +1063,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search by name or drug class'**
   String get medicationsSearchByNameOr;
+
+  /// No description provided for @errorUnreachableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot reach the server'**
+  String get errorUnreachableTitle;
+
+  /// No description provided for @errorGenericTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get errorGenericTitle;
+
+  /// No description provided for @errorUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot reach the QoLGuard server. Check that it is running and that the app is pointed at the right address.'**
+  String get errorUnreachable;
+
+  /// No description provided for @errorTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The server took too long to respond. Please try again.'**
+  String get errorTimeout;
+
+  /// No description provided for @errorCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'The request was cancelled.'**
+  String get errorCancelled;
+
+  /// No description provided for @errorValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Some of the details entered are outside the accepted range.'**
+  String get errorValidation;
+
+  /// No description provided for @errorNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'That medication is not supported.'**
+  String get errorNotSupported;
+
+  /// No description provided for @errorServer.
+  ///
+  /// In en, this message translates to:
+  /// **'The server could not complete the request. Please try again.'**
+  String get errorServer;
+
+  /// No description provided for @assessmentCouldNotGetResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get a result.'**
+  String get assessmentCouldNotGetResult;
+
+  /// No description provided for @remindersNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for your {medicine}'**
+  String remindersNotificationTitle(String medicine);
+
+  /// No description provided for @remindersNotificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap when you have taken it.'**
+  String get remindersNotificationBody;
 }
 
 class _AppLocalizationsDelegate

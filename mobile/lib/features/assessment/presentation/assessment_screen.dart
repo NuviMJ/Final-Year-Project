@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/api_error_text.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/app_state_views.dart';
@@ -240,6 +241,7 @@ class _Actions extends ConsumerWidget {
     WidgetRef ref,
     AssessmentController controller,
   ) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     if (!draft.isLastStep) {
       controller.next();
       return;
@@ -284,7 +286,9 @@ class _Actions extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            error is ApiException ? error.message : 'Could not get a result.',
+            error is ApiException
+                ? error.localized(l10n)
+                : l10n.assessmentCouldNotGetResult,
           ),
         ),
       );

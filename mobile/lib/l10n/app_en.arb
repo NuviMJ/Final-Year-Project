@@ -208,5 +208,18 @@
   "stepDailyLifeTitle": "Daily life",
   "stepDailyLifeSubtitle": "Sleep, activity and habits over a typical week",
 
-  "medicationsSearchByNameOr": "Search by name or drug class"
+  "medicationsSearchByNameOr": "Search by name or drug class",
+
+  "errorUnreachableTitle": "Cannot reach the server",
+  "errorGenericTitle": "Something went wrong",
+  "errorUnreachable": "Cannot reach the QoLGuard server. Check that it is running and that the app is pointed at the right address.",
+  "errorTimeout": "The server took too long to respond. Please try again.",
+  "errorCancelled": "The request was cancelled.",
+  "errorValidation": "Some of the details entered are outside the accepted range.",
+  "errorNotSupported": "That medication is not supported.",
+  "errorServer": "The server could not complete the request. Please try again.",
+  "assessmentCouldNotGetResult": "Could not get a result.",
+  "remindersNotificationTitle": "Time for your {medicine}",
+  "@remindersNotificationTitle": {"placeholders": {"medicine": {"type": "String"}}},
+  "remindersNotificationBody": "Tap when you have taken it."
 }

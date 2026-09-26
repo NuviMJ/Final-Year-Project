@@ -160,5 +160,16 @@
   "stepSideEffectsSubtitle": "The effects you have noticed since starting",
   "stepDailyLifeTitle": "දෛනික ජීවිතය",
   "stepDailyLifeSubtitle": "සාමාන්‍ය සතියක් තුළ නින්ද, ක්‍රියාකාරකම් සහ පුරුදු",
-  "medicationsSearchByNameOr": "නම හෝ ඖෂධ වර්ගය අනුව සොයන්න"
+  "medicationsSearchByNameOr": "නම හෝ ඖෂධ වර්ගය අනුව සොයන්න",
+  "errorUnreachableTitle": "සේවාදායකයට සම්බන්ධ විය නොහැක",
+  "errorGenericTitle": "යමක් වැරදී ඇත",
+  "errorUnreachable": "QoLGuard සේවාදායකයට සම්බන්ධ විය නොහැක. එය ක්‍රියාත්මක වන බව සහ යෙදුම නිවැරදි ලිපිනයට යොමු කර ඇති බව පරීක්ෂා කරන්න.",
+  "errorTimeout": "සේවාදායකය ප්‍රතිචාර දක්වන්නට වැඩි කාලයක් ගත්තා. කරුණාකර නැවත උත්සාහ කරන්න.",
+  "errorCancelled": "ඉල්ලීම අවලංගු කළා.",
+  "errorValidation": "ඇතුළත් කළ සමහර විස්තර පිළිගත් පරාසයෙන් පිටත පවතී.",
+  "errorNotSupported": "එම ඖෂධයට සහාය නොදක්වේ.",
+  "errorServer": "සේවාදායකයට ඉල්ලීම සම්පූර්ණ කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+  "assessmentCouldNotGetResult": "ප්‍රතිඵලයක් ලබා ගත නොහැකි විය.",
+  "remindersNotificationTitle": "ඔබගේ {medicine} ගැනීමට කාලයයි",
+  "remindersNotificationBody": "ගත් පසු මෙය තට්ටු කරන්න."
 }

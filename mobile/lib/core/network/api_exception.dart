@@ -14,6 +14,9 @@ enum ApiFailure {
   /// The request reached the server but took too long to come back.
   timeout,
 
+  /// The request was cancelled before it completed.
+  cancelled,
+
   /// The submitted data failed validation (HTTP 422).
   validation,
 
@@ -73,7 +76,7 @@ class ApiException implements Exception {
 
       case DioExceptionType.cancel:
         return const ApiException(
-          failure: ApiFailure.unknown,
+          failure: ApiFailure.cancelled,
           message: 'The request was cancelled.',
         );
 
