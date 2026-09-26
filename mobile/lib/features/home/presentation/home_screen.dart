@@ -57,37 +57,48 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            _LatestRiskCard(record: latest),
-            const SizedBox(height: 24),
-            Text(
-              l10n.doNext,
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w600),
+            const SizedBox(height: 20),
+            _LatestResultCard(record: latest),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => context.go(AppRoutes.medications),
+                icon: const Icon(Icons.assignment_outlined),
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Text(
+                    l10n.startAssessment,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(height: 10),
-            _ActionTile(
-              icon: Icons.assignment_outlined,
-              title: l10n.actionAssessTitle,
-              subtitle: l10n.actionAssessSubtitle,
-              onTap: () => context.go(AppRoutes.medications),
-            ),
-            const SizedBox(height: 8),
-            _ActionTile(
-              icon: Icons.history,
-              title: l10n.actionHistoryTitle,
-              subtitle: history.isEmpty
-                  ? l10n.historyNothingYet
-                  : l10n.historyOnDevice(history.length),
-              enabled: history.isNotEmpty,
-              onTap: () => context.go(AppRoutes.history),
-            ),
-            const SizedBox(height: 8),
-            _ActionTile(
-              icon: Icons.menu_book_outlined,
-              title: l10n.actionLearnTitle,
-              subtitle: l10n.actionLearnSubtitle,
-              onTap: () => context.go(AppRoutes.learn),
+            const SizedBox(height: 16),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Expanded(
+                    child: _ShortcutCard(
+                      icon: Icons.bar_chart_rounded,
+                      title: l10n.historyTitle,
+                      subtitle: l10n.historySubtitle,
+                      enabled: history.isNotEmpty,
+                      onTap: () => context.go(AppRoutes.history),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _ShortcutCard(
+                      icon: Icons.lightbulb_outline,
+                      title: l10n.learnTitle,
+                      subtitle: l10n.learnSubtitle,
+                      onTap: () => context.go(AppRoutes.learn),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 28),
             Container(
@@ -130,105 +141,125 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _LatestRiskCard extends StatelessWidget {
-  const _LatestRiskCard({required this.record});
+class _LatestResultCard extends StatelessWidget {
+  const _LatestResultCard({required this.record});
 
   final AssessmentRecord? record;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
     final AppLocalizations l10n = AppLocalizations.of(context);
-    final bool hasResult = record != null;
-    final Color accent =
-        hasResult ? record!.prediction!.color : AppColors.primary;
+    final ThemeData theme = Theme.of(context);
+
+    // Three states: nothing recorded yet, a day with no reported effects, and
+    // a scored assessment. A no-effects record carries no prediction.
+    final bool hasRecord = record != null;
+    final bool scored = record?.prediction != null;
+    final bool noEffects = record?.noSideEffectsReported ?? false;
+
+    final Color accent = scored
+        ? record!.prediction!.color
+        : noEffects
+            ? AppColors.riskLow
+            : theme.colorScheme.outlineVariant;
+
+    final String footer = hasRecord
+        ? l10n.lastChecked(_relativeDay(l10n, record!.takenAt))
+        : l10n.takeFirstAssessment;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: hasResult
+      borderRadius: BorderRadius.circular(16),
+      onTap: hasRecord
           ? () => context.go('${AppRoutes.history}/${record!.id}')
           : null,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: hasResult
-                ? accent.withValues(alpha: 0.45)
+            color: hasRecord
+                ? accent.withValues(alpha: 0.35)
                 : theme.colorScheme.outlineVariant,
           ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              l10n.latestResultLabel,
-              style: theme.textTheme.labelSmall?.copyWith(
-                letterSpacing: 1.1,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              l10n.latestResultTitle,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
-            const SizedBox(height: 14),
-            Row(
-              children: <Widget>[
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: accent.withValues(alpha: 0.12),
-                    border: hasResult ? Border.all(color: accent, width: 2) : null,
-                  ),
-                  child: hasResult
-                      ? Center(
-                          child: Text(
-                            record!.prediction!.riskCategory[0],
-                            style: TextStyle(
+            const SizedBox(height: 20),
+            Container(
+              width: 156,
+              height: 156,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: hasRecord
+                    ? accent.withValues(alpha: 0.10)
+                    : Colors.transparent,
+                border: Border.all(color: accent, width: 5),
+              ),
+              child: Center(
+                child: hasRecord
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(
+                            scored
+                                ? record!.prediction!.riskCategory
+                                : l10n.noEffectsRing,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineSmall?.copyWith(
                               color: accent,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        )
-                      : Icon(Icons.health_and_safety_outlined,
-                          color: accent, size: 24),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        hasResult
-                            ? l10n.riskLevel(record!.prediction!.riskCategory)
-                            : l10n.noAssessmentsYet,
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                          const SizedBox(height: 2),
+                          Text(
+                            scored ? l10n.qolScore : l10n.noEffectsRingCaption,
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(color: accent),
+                          ),
+                        ],
+                      )
+                    : Icon(
+                        Icons.health_and_safety_outlined,
+                        size: 46,
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        hasResult
-                            ? '${record!.medicationName} · '
-                                '${DateFormat('d MMM, HH:mm').format(record!.takenAt)}'
-                            : l10n.completeOnePrompt,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
-                ),
-                if (hasResult) const Icon(Icons.chevron_right),
-              ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              footer,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
           ],
         ),
       ),
     );
   }
+
+  /// "today", "yesterday", "3 days ago", then a date once a week has passed.
+  static String _relativeDay(AppLocalizations l10n, DateTime taken) {
+    final DateTime now = DateTime.now();
+    final int days = DateTime(now.year, now.month, now.day)
+        .difference(DateTime(taken.year, taken.month, taken.day))
+        .inDays;
+
+    if (days <= 0) return l10n.relativeToday;
+    if (days == 1) return l10n.relativeYesterday;
+    if (days < 7) return l10n.relativeDaysAgo(days);
+    return l10n.relativeOnDate(
+        DateFormat('d MMM yyyy', l10n.localeName).format(taken));
+  }
 }
 
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({
+class _ShortcutCard extends StatelessWidget {
+  const _ShortcutCard({
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -240,7 +271,6 @@ class _ActionTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-
   final bool enabled;
 
   @override
@@ -252,23 +282,40 @@ class _ActionTile extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      child: ListTile(
-        enabled: enabled,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: enabled ? onTap : null,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: Icon(icon,
-            color: enabled ? AppColors.primary : foreground, size: 26),
-        title: Text(
-          title,
-          style: theme.textTheme.titleSmall
-              ?.copyWith(fontWeight: FontWeight.w600, color: foreground),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Icon(
+                icon,
+                size: 26,
+                color: enabled ? AppColors.primary : foreground,
+              ),
+              const SizedBox(height: 18),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700, color: foreground),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: theme.textTheme.bodySmall
-              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-        ),
-        trailing: enabled ? const Icon(Icons.chevron_right) : null,
       ),
     );
   }
