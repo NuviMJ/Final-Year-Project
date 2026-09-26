@@ -11,6 +11,7 @@ import '../../history/data/assessment_store.dart';
 import '../../history/domain/assessment_record.dart';
 import '../../startup/data/health_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/localization/model_values.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -207,7 +208,7 @@ class _LatestResultCard extends StatelessWidget {
                         children: <Widget>[
                           Text(
                             scored
-                                ? record!.prediction!.riskCategory
+                                ? riskLabel(l10n, record!.prediction!.riskCategory)
                                 : l10n.noEffectsRing,
                             textAlign: TextAlign.center,
                             style: theme.textTheme.headlineSmall?.copyWith(

@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../data/notification_service.dart';
 import '../data/reminder_store.dart';
 import '../domain/reminder.dart';
+import 'reminder_text.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Scheduled medication reminders.
@@ -273,7 +274,7 @@ class _ReminderTile extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        reminder.daysLabel,
+                        reminder.daysLabel(l10n),
                         style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant),
                       ),

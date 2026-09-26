@@ -7,7 +7,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../history/data/assessment_store.dart';
 import '../../history/domain/assessment_record.dart';
 import '../domain/trend_summary.dart';
+import 'trend_text.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/localization/model_values.dart';
 
 class TrendsScreen extends ConsumerStatefulWidget {
   const TrendsScreen({super.key});
@@ -64,13 +66,14 @@ class _PeriodSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SizedBox(
       width: double.infinity,
       child: SegmentedButton<TrendPeriod>(
         segments: TrendPeriod.values
             .map((TrendPeriod period) => ButtonSegment<TrendPeriod>(
                   value: period,
-                  label: Text(period.label),
+                  label: Text(period.label(l10n)),
                 ))
             .toList(),
         selected: <TrendPeriod>{selected},
@@ -305,7 +308,7 @@ class _BandLegend extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                band,
+                riskLabel(AppLocalizations.of(context), band),
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
@@ -323,27 +326,28 @@ class _DirectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final (IconData icon, Color colour, String heading) = switch (summary.direction) {
       TrendDirection.rising => (
           Icons.trending_up,
           AppColors.riskHigh,
-          'Rising'
+          l10n.trendsRising
         ),
       TrendDirection.falling => (
           Icons.trending_down,
           AppColors.riskLow,
-          'Falling'
+          l10n.trendsFalling
         ),
       TrendDirection.steady => (
           Icons.trending_flat,
           AppColors.primary,
-          'Steady'
+          l10n.trendsSteady
         ),
       TrendDirection.unknown => (
           Icons.help_outline,
           theme.colorScheme.onSurfaceVariant,
-          'Not enough data'
+          l10n.trendsNotEnoughData
         ),
     };
 
@@ -382,7 +386,7 @@ class _DirectionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(summary.message, style: theme.textTheme.bodyMedium),
+          Text(summary.message(l10n), style: theme.textTheme.bodyMedium),
         ],
       ),
     );
@@ -434,7 +438,7 @@ class _BandBreakdown extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Text(band, style: theme.textTheme.bodySmall),
+                        Text(riskLabel(l10n, band), style: theme.textTheme.bodySmall),
                       ],
                     ),
                   ),
@@ -473,8 +477,8 @@ class _NotEnoughData extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             count == 0
-                ? 'No assessments in this period'
-                : 'One assessment so far',
+                ? l10n.trendsNoneInPeriod
+                : l10n.trendsOneSoFar,
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w600),
           ),

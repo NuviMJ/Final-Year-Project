@@ -1,0 +1,2 @@
+# Sinhala strings checked by a native speaker, one ARB key or content file per line.
+# tool/sync_arb.py stops listing them for review once they appear here.

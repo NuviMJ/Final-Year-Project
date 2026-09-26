@@ -226,7 +226,9 @@ class _Actions extends ConsumerWidget {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Text(draft.isLastStep ? 'Get my result' : 'Continue'),
+                      : Text(draft.isLastStep
+                          ? l10n.assessmentGetMyResult
+                          : l10n.commonContinue),
                 ),
               ),
             ),

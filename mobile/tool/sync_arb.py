@@ -30,6 +30,18 @@ CLINICAL = re.compile(
     re.IGNORECASE,
 )
 
+# Health wording a native speaker must check even once it is translated. Keys
+# go on tool/l10n_reviewed.txt once checked, one per line.
+REVIEW = re.compile(
+    r"sideEffect|symptom|severity|risk|dose|dosage|seriousness"
+    r"|^medicalDisclaimer$|^predictionSummary|^trendsMessage|Help$"
+    r"|NotAHealthCheck|ChooseEvery",
+    re.IGNORECASE,
+)
+REVIEWED = pathlib.Path("tool/l10n_reviewed.txt")
+# Translated as whole files rather than through the ARB.
+CONTENT = ["lib/features/learn/domain/library_si.dart"]
+
 # A real placeholder is an identifier closed by "}" or opened into ",plural".
 PLACEHOLDER = re.compile(r"\{\s*([A-Za-z_]\w*)\s*[,}]")
 
@@ -83,10 +95,20 @@ def main() -> int:
             if CLINICAL.search(key):
                 clinical.append(key)
 
+    reviewed = set()
+    if REVIEWED.exists():
+        reviewed = {line.strip() for line in REVIEWED.read_text(encoding="utf-8").splitlines()
+                    if line.strip() and not line.startswith("#")}
+    to_review = sorted(k for k in en if REVIEW.search(k) and k not in reviewed
+                       and k not in untranslated)
+    content = [c for c in CONTENT if c not in reviewed]
+
     STATUS.write_text(json.dumps({
         "total": len(en),
         "untranslated": sorted(untranslated),
         "clinical_needing_review": sorted(clinical),
+        "translated_needing_native_review": to_review,
+        "content_needing_native_review": content,
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     done = len(en) - len(untranslated)
@@ -105,6 +127,10 @@ def main() -> int:
               "these need a native speaker, not machine translation:")
         for key in clinical:
             print(f"    {key}")
+    if to_review or content:
+        print(f"\n  {len(to_review)} translated health string(s) and "
+              f"{len(content)} content file(s) await native-speaker review; "
+              f"list them in {REVIEWED} once checked.")
     print(f"\nFull list: {STATUS}")
     return 1 if mismatched else 0
 

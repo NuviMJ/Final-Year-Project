@@ -21,12 +21,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSubtitle => 'Medication names stay in English';
 
   @override
-  String get languageEnglish => 'English';
-
-  @override
-  String get languageSinhala => 'සිංහල';
-
-  @override
   String get latestResultTitle => 'Latest QoL result';
 
   @override
@@ -87,52 +81,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navTrends => 'Trends';
 
   @override
-  String get doNext => 'Do next';
-
-  @override
-  String get actionAssessTitle => 'Start an assessment';
-
-  @override
-  String get actionAssessSubtitle => 'Four short steps, about two minutes';
-
-  @override
   String get actionHistoryTitle => 'Your history';
-
-  @override
-  String get historyNothingYet => 'Nothing recorded yet';
-
-  @override
-  String historyOnDevice(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count assessments on this device',
-      one: '1 assessment on this device',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get actionLearnTitle => 'Learn';
 
   @override
-  String get actionLearnSubtitle =>
-      'What your result means, and what affects it';
-
-  @override
-  String get latestResultLabel => 'LATEST RESULT';
-
-  @override
-  String riskLevel(String category) {
-    return '$category risk';
-  }
-
-  @override
   String get noAssessmentsYet => 'No assessments yet';
-
-  @override
-  String get completeOnePrompt =>
-      'Complete one to see your quality-of-life risk here.';
 
   @override
   String modelVersion(String version) {
@@ -633,4 +588,386 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learnTipsHeading => 'Health tips';
+
+  @override
+  String get commonContinue => 'Continue';
+
+  @override
+  String get assessmentGetMyResult => 'Get my result';
+
+  @override
+  String get assessmentDailyDose => 'Daily dose';
+
+  @override
+  String get assessmentWhenDidTheseStart => 'When did these start?';
+
+  @override
+  String get assessmentEnterNumber => 'Enter a number';
+
+  @override
+  String assessmentMustBeBetween(int low, int high) {
+    return 'Must be between $low and $high';
+  }
+
+  @override
+  String get medicationsNoneSelected => 'No medicine selected yet';
+
+  @override
+  String medicationsSelectedCount(int count, int max) {
+    return '$count of $max selected';
+  }
+
+  @override
+  String medicationsContinueWith(int count) {
+    return 'Continue with $count medicines';
+  }
+
+  @override
+  String get medicationsAssessedSeparately =>
+      'Each medicine is assessed separately.';
+
+  @override
+  String get medicationsCountCap =>
+      'The model counts at most 3 other medicines, so the extra ones are not reflected in that count.';
+
+  @override
+  String get predictionSummaryLow =>
+      'Your current answers do not suggest a raised risk of quality-of-life decline. Keep taking your medication as prescribed.';
+
+  @override
+  String get predictionSummaryMedium =>
+      'Your answers suggest some risk of quality-of-life decline. It would be worth mentioning these symptoms at your next appointment.';
+
+  @override
+  String get predictionSummaryHigh =>
+      'Your answers suggest a raised risk of quality-of-life decline. Consider speaking to your doctor or pharmacist soon.';
+
+  @override
+  String predictionBandSummary(int count, int total, String band) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count of $total medicines are in the $band band.',
+      one: '$count of $total medicines is in the $band band.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String predictionBandSummarySingle(String band) {
+    return '1 of 1 medicine is in the $band band.';
+  }
+
+  @override
+  String predictionHighestRisk(String medicine) {
+    return 'Highest risk: $medicine';
+  }
+
+  @override
+  String get predictionTakingThese => 'Taking these';
+
+  @override
+  String get predictionEffectsStarted => 'Effects started';
+
+  @override
+  String get predictionSleep => 'Sleep';
+
+  @override
+  String get predictionSleepProblems => 'Sleep problems';
+
+  @override
+  String get predictionActivity => 'Activity';
+
+  @override
+  String get predictionDailySteps => 'Daily steps';
+
+  @override
+  String get predictionDiet => 'Diet';
+
+  @override
+  String get predictionSmoker => 'Smoker';
+
+  @override
+  String get predictionAlcohol => 'Alcohol';
+
+  @override
+  String get historyNone => 'None';
+
+  @override
+  String historyNamesAnd(String names, String last) {
+    return '$names and $last';
+  }
+
+  @override
+  String get historyNoSideEffectsReported => 'No side effects reported';
+
+  @override
+  String get remindersEveryDay => 'Every day';
+
+  @override
+  String get remindersWeekdays => 'Weekdays';
+
+  @override
+  String get remindersWeekends => 'Weekends';
+
+  @override
+  String get remindersEditTitle => 'Edit reminder';
+
+  @override
+  String get remindersNewTitle => 'New reminder';
+
+  @override
+  String get settingsYourData => 'Your data';
+
+  @override
+  String get settingsConnection => 'Connection';
+
+  @override
+  String get settingsNotConnected => 'Not connected';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get settingsResearchPrototype => 'Research prototype';
+
+  @override
+  String get settingsNothingStored => 'Nothing stored yet';
+
+  @override
+  String get startupTagline =>
+      'Early detection of quality-of-life decline in long-term medication users';
+
+  @override
+  String get trendsPeriodMonth => '30 days';
+
+  @override
+  String get trendsPeriodQuarter => '90 days';
+
+  @override
+  String get trendsPeriodAll => 'All time';
+
+  @override
+  String get trendsMessageRising =>
+      'Your risk of quality-of-life decline has been rising over this period. It would be worth discussing these symptoms with your doctor or pharmacist.';
+
+  @override
+  String get trendsMessageFalling =>
+      'Your risk of quality-of-life decline has been falling over this period. Keep taking your medication as prescribed.';
+
+  @override
+  String get trendsMessageSteady =>
+      'Your risk of quality-of-life decline has stayed broadly steady over this period.';
+
+  @override
+  String get trendsMessageUnknown =>
+      'Complete at least two assessments to see how your risk is moving.';
+
+  @override
+  String get trendsRising => 'Rising';
+
+  @override
+  String get trendsFalling => 'Falling';
+
+  @override
+  String get trendsSteady => 'Steady';
+
+  @override
+  String get trendsNotEnoughData => 'Not enough data';
+
+  @override
+  String get trendsNoneInPeriod => 'No assessments in this period';
+
+  @override
+  String get trendsOneSoFar => 'One assessment so far';
+
+  @override
+  String get riskLow => 'Low';
+
+  @override
+  String get riskMedium => 'Medium';
+
+  @override
+  String get riskHigh => 'High';
+
+  @override
+  String get sideEffectAbdominalPain => 'Abdominal Pain';
+
+  @override
+  String get sideEffectAnxiety => 'Anxiety';
+
+  @override
+  String get sideEffectConstipation => 'Constipation';
+
+  @override
+  String get sideEffectDiarrhea => 'Diarrhea';
+
+  @override
+  String get sideEffectDizziness => 'Dizziness';
+
+  @override
+  String get sideEffectDryCough => 'Dry cough';
+
+  @override
+  String get sideEffectDryMouth => 'Dry mouth';
+
+  @override
+  String get sideEffectFatigue => 'Fatigue';
+
+  @override
+  String get sideEffectHeadache => 'Headache';
+
+  @override
+  String get sideEffectHeartburn => 'Heartburn';
+
+  @override
+  String get sideEffectHypoglycemia => 'Low blood sugar';
+
+  @override
+  String get sideEffectInsomnia => 'Sleep problems';
+
+  @override
+  String get sideEffectLiverToxicity => 'Liver problems';
+
+  @override
+  String get sideEffectMusclePain => 'Muscle Pain';
+
+  @override
+  String get sideEffectNausea => 'Nausea';
+
+  @override
+  String get sideEffectPalpitations => 'Heart racing';
+
+  @override
+  String get sideEffectRash => 'Rash';
+
+  @override
+  String get sideEffectStomachPain => 'Stomach Pain';
+
+  @override
+  String get sideEffectSweating => 'Sweating';
+
+  @override
+  String get sideEffectSwelling => 'Swelling';
+
+  @override
+  String get sideEffectWeightGain => 'Weight Gain';
+
+  @override
+  String get severityMild => 'Mild';
+
+  @override
+  String get severityModerate => 'Moderate';
+
+  @override
+  String get severitySevere => 'Severe';
+
+  @override
+  String get genderFemale => 'Female';
+
+  @override
+  String get genderMale => 'Male';
+
+  @override
+  String get valueNo => 'No';
+
+  @override
+  String get valueYes => 'Yes';
+
+  @override
+  String get alcoholNone => 'No alcohol';
+
+  @override
+  String get alcoholOccasional => 'Occasional';
+
+  @override
+  String get alcoholFrequent => 'Frequent';
+
+  @override
+  String get levelLow => 'Low';
+
+  @override
+  String get levelMedium => 'Medium';
+
+  @override
+  String get levelHigh => 'High';
+
+  @override
+  String get dietUnhealthy => 'Unhealthy';
+
+  @override
+  String get dietMedium => 'Medium';
+
+  @override
+  String get dietHealthy => 'Healthy';
+
+  @override
+  String get fieldAge => 'Age';
+
+  @override
+  String get fieldGender => 'Gender';
+
+  @override
+  String get fieldSmoker => 'Smoker';
+
+  @override
+  String get fieldAlcoholUse => 'Alcohol use';
+
+  @override
+  String get fieldSleepQuality => 'Sleep quality';
+
+  @override
+  String get fieldPhysicalActivityLevel => 'Physical activity level';
+
+  @override
+  String get fieldDailySteps => 'Daily steps';
+
+  @override
+  String get fieldDietaryHabits => 'Dietary habits';
+
+  @override
+  String get fieldSleepDisorders => 'Sleep disorders';
+
+  @override
+  String get fieldTreatmentDuration => 'Treatment duration days';
+
+  @override
+  String get fieldAgeHelp => 'Patient age in years';
+
+  @override
+  String get fieldGenderHelp => 'Patient gender';
+
+  @override
+  String get fieldSmokerHelp => 'Current smoker';
+
+  @override
+  String get fieldAlcoholUseHelp => 'Alcohol consumption';
+
+  @override
+  String get fieldSleepQualityHelp =>
+      'Self-rated sleep quality (1 = worst, 10 = best)';
+
+  @override
+  String get fieldPhysicalActivityLevelHelp =>
+      'General physical activity level';
+
+  @override
+  String get fieldDailyStepsHelp => 'Typical daily step count';
+
+  @override
+  String get fieldDietaryHabitsHelp => 'General diet quality';
+
+  @override
+  String get fieldSleepDisordersHelp => 'Diagnosed sleep disorder';
+
+  @override
+  String get fieldTreatmentDurationHelp => 'Days on this medication so far';
+
+  @override
+  String get fieldOnsetHelp =>
+      'Days from starting the drug until the side effect appeared';
+
+  @override
+  String get fieldDosageHelp =>
+      'Total daily dose (mg; international units for Insulin)';
 }

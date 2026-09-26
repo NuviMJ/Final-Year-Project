@@ -171,7 +171,7 @@ class _Branding extends StatelessWidget {
           FadeTransition(
             opacity: taglineFade,
             child: Text(
-              AppConstants.appTagline,
+              l10n.startupTagline,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),

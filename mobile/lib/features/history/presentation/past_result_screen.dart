@@ -15,6 +15,7 @@ import '../../prediction/domain/prediction.dart';
 import '../domain/assessment_record.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../assessment/presentation/option_labels.dart';
+import '../../../core/localization/model_values.dart';
 
 class PastResultScreen extends ConsumerWidget {
   const PastResultScreen({super.key, required this.recordId});
@@ -88,7 +89,7 @@ class _Detail extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    prediction!.riskCategory.toUpperCase(),
+                    riskLabel(l10n, prediction!.riskCategory).toUpperCase(),
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: color,
                       fontWeight: FontWeight.bold,
@@ -135,7 +136,7 @@ class _Detail extends StatelessWidget {
                     value: medicine.prediction == null
                         ? medicine.doseLabel
                         : '${medicine.doseLabel} · '
-                            '${medicine.prediction!.riskCategory}',
+                            '${riskLabel(l10n, medicine.prediction!.riskCategory)}',
                   ),
                 const SizedBox(height: 10),
                 _GroupTitle(icon: '\u{1FA79}', title: l10n.historySideEffects),
@@ -144,8 +145,8 @@ class _Detail extends StatelessWidget {
                 else
                   for (final SymptomReport symptom in record.symptoms)
                     _Row(
-                      label: SymptomReport.labelFor(symptom.sideEffect),
-                      value: symptom.severity,
+                      label: sideEffectName(l10n, symptom.sideEffect),
+                      value: valueLabel(l10n, 'Severity', symptom.severity),
                     ),
                 const SizedBox(height: 10),
                 _GroupTitle(icon: '\u{1F4DD}', title: l10n.historyEverythingElse),
@@ -153,7 +154,7 @@ class _Detail extends StatelessWidget {
                     in record.answers.entries)
                   if (!_hiddenAnswers.contains(entry.key))
                     _Row(
-                      label: _humanise(entry.key),
+                      label: fieldLabel(l10n, entry.key, humanise(entry.key)),
                       value: _answerLabel(l10n, entry.key, entry.value),
                     ),
               ],
@@ -216,7 +217,7 @@ String _answerLabel(AppLocalizations l10n, String field, Object value) {
   if (value is num && field == SleepQualityScale.fieldName) {
     return sleepQualityWithFace(l10n, number);
   }
-  return _humanise(value.toString());
+  return valueLabel(l10n, field, value.toString());
 }
 
 class _NoEffectsBanner extends StatelessWidget {
@@ -315,7 +316,7 @@ class _Bar extends StatelessWidget {
           SizedBox(
             width: 64,
             child: Text(
-              label,
+              riskLabel(AppLocalizations.of(context), label),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: isPredicted ? FontWeight.bold : FontWeight.normal,
               ),
@@ -378,10 +379,4 @@ class _Row extends StatelessWidget {
       ),
     );
   }
-}
-
-String _humanise(String value) {
-  if (value.isEmpty) return value;
-  final String spaced = value.replaceAll('_', ' ');
-  return spaced[0].toUpperCase() + spaced.substring(1);
 }

@@ -6,7 +6,9 @@ import 'package:intl/intl.dart';
 import '../../../core/router/app_router.dart';
 import '../data/assessment_store.dart';
 import '../domain/assessment_record.dart';
+import 'record_text.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/localization/model_values.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -83,6 +85,7 @@ class _HistoryTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Dismissible(
@@ -114,10 +117,10 @@ class _HistoryTile extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const SizedBox(height: 2),
-              Text(record.medicinesLabel),
-              if (record.sideEffectLabel.isNotEmpty)
+              Text(record.medicinesLabel(l10n)),
+              if (record.sideEffectLabel(l10n).isNotEmpty)
                 Text(
-                  record.sideEffectLabel,
+                  record.sideEffectLabel(l10n),
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
@@ -170,7 +173,10 @@ class _RiskChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        record.prediction?.riskCategory ?? 'None',
+        record.prediction == null
+            ? AppLocalizations.of(context).historyNone
+            : riskLabel(
+                AppLocalizations.of(context), record.prediction!.riskCategory),
         style: TextStyle(
           color: color,
           fontWeight: FontWeight.w600,

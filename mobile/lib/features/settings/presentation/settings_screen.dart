@@ -55,7 +55,7 @@ class SettingsScreen extends ConsumerWidget {
             _SectionHeading(AppLocalizations.of(context).sectionLanguage),
             const _LanguageSelector(),
             const SizedBox(height: 28),
-            _SectionHeading('Your data'),
+            _SectionHeading(l10n.settingsYourData),
             _ActionRow(
               icon: Icons.copy_all_outlined,
               title: l10n.settingsCopyMyData,
@@ -74,13 +74,13 @@ class SettingsScreen extends ConsumerWidget {
                   : () => _confirmDelete(context, ref),
             ),
             const SizedBox(height: 28),
-            _SectionHeading('Connection'),
+            _SectionHeading(l10n.settingsConnection),
             _InfoRow(label: l10n.settingsServer, value: Env.apiBaseUrl),
             _InfoRow(
               label: l10n.settingsModel,
               value: service.maybeWhen(
                 data: (ServiceStatus status) => status.modelVersion,
-                orElse: () => 'Not connected',
+                orElse: () => l10n.settingsNotConnected,
               ),
             ),
             _InfoRow(
@@ -91,9 +91,9 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 28),
-            _SectionHeading('About'),
+            _SectionHeading(l10n.settingsAbout),
             _InfoRow(label: l10n.settingsApp, value: AppConstants.appName),
-            _InfoRow(label: l10n.settingsPurpose, value: 'Research prototype'),
+            _InfoRow(label: l10n.settingsPurpose, value: l10n.settingsResearchPrototype),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
@@ -346,7 +346,9 @@ class _ActionRow extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        enabled ? subtitle : 'Nothing stored yet',
+        enabled
+            ? subtitle
+            : AppLocalizations.of(context).settingsNothingStored,
         style: theme.textTheme.bodySmall
             ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       ),

@@ -9,8 +9,10 @@ import '../../assessment/application/assessment_controller.dart';
 import '../data/prediction_repository.dart';
 import '../domain/assessment_outcome.dart';
 import '../domain/prediction.dart';
+import 'prediction_text.dart';
 import 'widgets/result_summary.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/localization/model_values.dart';
 
 /// The outcome of one assessment.
 
@@ -170,7 +172,7 @@ class _Result extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  prediction.riskCategory.toUpperCase(),
+                  riskLabel(l10n, prediction.riskCategory).toUpperCase(),
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: prediction.color,
                     fontWeight: FontWeight.bold,
@@ -187,7 +189,7 @@ class _Result extends ConsumerWidget {
         Text(
           outcome.isSingle
               ? worst.medication.name
-              : 'Highest risk: ${worst.medication.name}',
+              : l10n.predictionHighestRisk(worst.medication.name),
           textAlign: TextAlign.center,
           style: theme.textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w600),
@@ -195,7 +197,7 @@ class _Result extends ConsumerWidget {
         if (!outcome.isSingle) ...<Widget>[
           const SizedBox(height: 4),
           Text(
-            outcome.bandSummary,
+            outcome.bandSummary(l10n),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -203,7 +205,7 @@ class _Result extends ConsumerWidget {
         ],
         const SizedBox(height: 16),
         Text(
-          prediction.summary,
+          prediction.summary(l10n),
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge,
         ),
@@ -295,7 +297,7 @@ class _ProbabilityBar extends StatelessWidget {
           SizedBox(
             width: 64,
             child: Text(
-              label,
+              riskLabel(AppLocalizations.of(context), label),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: isPredicted ? FontWeight.bold : FontWeight.normal,
               ),

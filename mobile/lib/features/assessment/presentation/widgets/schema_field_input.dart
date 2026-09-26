@@ -8,6 +8,7 @@ import '../../domain/sleep_quality_scale.dart';
 import '../../domain/field_spec.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../option_labels.dart';
+import '../../../../core/localization/model_values.dart';
 
 
 class SchemaFieldInput extends StatelessWidget {
@@ -38,13 +39,14 @@ class SchemaFieldInput extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            _label,
+            _label(AppLocalizations.of(context)),
             style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
-          if (spec.description != null && spec.description!.isNotEmpty) ...<Widget>[
+          if (_description(context) case final String description
+              when description.isNotEmpty) ...<Widget>[
             const SizedBox(height: 2),
             Text(
-              spec.description!,
+              description,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
@@ -85,12 +87,14 @@ class SchemaFieldInput extends StatelessWidget {
             )
           else if (spec.allowedValues!.length <= 3)
             _SegmentedInput(
+              field: spec.name,
               options: spec.allowedValues!,
               value: value as String,
               onChanged: onChanged,
             )
           else
             _DropdownInput(
+              field: spec.name,
               options: spec.allowedValues!,
               value: value as String,
               onChanged: onChanged,
@@ -108,11 +112,11 @@ class SchemaFieldInput extends StatelessWidget {
     );
   }
 
-  String get _label => switch (spec.name) {
-        'Dosage_mg' => 'Daily dose',
-        'Onset_Days' => 'When did these start?',
-        _ => spec.label,
-      };
+  String _label(AppLocalizations l10n) =>
+      fieldLabel(l10n, spec.name, spec.label);
+
+  String? _description(BuildContext context) => fieldDescription(
+      AppLocalizations.of(context), spec.name, spec.description);
 
   String? get _unit => spec.name == 'Dosage_mg' ? medication?.doseUnit : null;
 
@@ -163,11 +167,14 @@ class _WholeNumberFieldState extends State<_WholeNumberField> {
     // An empty or out-of-range entry keeps the last valid value, so the form
     // can never submit something the model has not seen.
     if (parsed == null) {
-      setState(() => _error = raw.trim().isEmpty ? null : 'Enter a number');
+      setState(() => _error = raw.trim().isEmpty
+          ? null
+          : AppLocalizations.of(context).assessmentEnterNumber);
       return;
     }
     if (parsed < low || parsed > high) {
-      setState(() => _error = 'Must be between $low and $high');
+      setState(() => _error =
+          AppLocalizations.of(context).assessmentMustBeBetween(low, high));
       return;
     }
     setState(() => _error = null);
@@ -363,11 +370,13 @@ class _NumericInput extends StatelessWidget {
 
 class _SegmentedInput extends StatelessWidget {
   const _SegmentedInput({
+    required this.field,
     required this.options,
     required this.value,
     required this.onChanged,
   });
 
+  final String field;
   final List<String> options;
   final String value;
   final ValueChanged<Object> onChanged;
@@ -380,7 +389,8 @@ class _SegmentedInput extends StatelessWidget {
         segments: options
             .map((String option) => ButtonSegment<String>(
                   value: option,
-                  label: Text(_humanise(option), textAlign: TextAlign.center),
+                  label: Text(valueLabel(AppLocalizations.of(context), field, option),
+                      textAlign: TextAlign.center),
                 ))
             .toList(),
         selected: <String>{value},
@@ -394,11 +404,13 @@ class _SegmentedInput extends StatelessWidget {
 
 class _DropdownInput extends StatelessWidget {
   const _DropdownInput({
+    required this.field,
     required this.options,
     required this.value,
     required this.onChanged,
   });
 
+  final String field;
   final List<String> options;
   final String value;
   final ValueChanged<Object> onChanged;
@@ -412,7 +424,7 @@ class _DropdownInput extends StatelessWidget {
       items: options
           .map((String option) => DropdownMenuItem<String>(
                 value: option,
-                child: Text(_humanise(option)),
+                child: Text(valueLabel(AppLocalizations.of(context), field, option)),
               ))
           .toList(),
       onChanged: (String? selected) {
@@ -420,12 +432,4 @@ class _DropdownInput extends StatelessWidget {
       },
     );
   }
-}
-
-/// The model's category values are machine labels — `No_Alcohol`, `unhealthy`,
-/// `mild`. They are sent to the API verbatim, but shown to the patient tidied
-/// up.
-String _humanise(String value) {
-  final String spaced = value.replaceAll('_', ' ');
-  return spaced[0].toUpperCase() + spaced.substring(1);
 }

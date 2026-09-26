@@ -130,24 +130,6 @@ class AssessmentRecord {
   String get doseLabel =>
       worst?.doseLabel ?? (medicines.isEmpty ? '' : medicines.first.doseLabel);
 
-  /// e.g. "Omeprazole, Atorvastatin and Metformin"
-  String get medicinesLabel {
-    final List<String> names =
-        medicines.map((RecordedMedicine m) => m.name).toList();
-    if (names.isEmpty) return '';
-    if (names.length == 1) return names.first;
-    return '${names.sublist(0, names.length - 1).join(', ')} and ${names.last}';
-  }
-
-  String get sideEffectLabel {
-    if (noSideEffectsReported) return 'No side effects reported';
-    if (symptoms.isEmpty) return '';
-    return symptoms
-        .map((SymptomReport s) =>
-            '${SymptomReport.labelFor(s.sideEffect)} · ${s.severity}')
-        .join(', ');
-  }
-
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'taken_at': takenAt.toIso8601String(),

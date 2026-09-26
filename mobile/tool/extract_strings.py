@@ -33,6 +33,8 @@ IGNORE_MARKER = "l10n-ignore"
 
 # Generated output and the ARB folder itself.
 SKIP_DIRS = {"l10n"}
+# Learn content is translated as whole files, not through the ARB.
+SKIP_FILES = {"library_en.dart", "library_si.dart"}
 
 # Named arguments whose value is shown to the user.
 ARG_NAMES = {
@@ -473,7 +475,8 @@ def main() -> int:
     found: list[Found] = []
     sources: dict[pathlib.Path, str] = {}
     for path in sorted(LIB.rglob("*.dart")):
-        if SKIP_DIRS & set(path.parts) or path.name.endswith((".g.dart", ".freezed.dart")):
+        if (SKIP_DIRS & set(path.parts) or path.name in SKIP_FILES
+                or path.name.endswith((".g.dart", ".freezed.dart"))):
             continue
         if only and not any(path.as_posix() == o or path.as_posix().startswith(o + "/")
                             for o in only):
@@ -509,7 +512,7 @@ def main() -> int:
         if rows:
             print(f"--- {verdict} ({len(rows)}) — {why}")
             for f in rows:
-                print(f"    {f.path.as_posix()}:{f.line}  {f.text[:60]!r}")
+                print(f"    {f.path.as_posix()}:{f.line}  {ascii(f.text[:60])}")
             print()
 
     safe = [f for f in found if f.verdict == "safe"]
@@ -517,7 +520,7 @@ def main() -> int:
         print(f"--- would rewrite ({len(safe)}, {len(new_keys)} new keys)")
         for f in safe:
             extra = f", un-const {len(f.scope.consts)}" if f.scope.consts else ""
-            print(f"    {f.path.as_posix()}:{f.line}  {f.key}{extra}  {f.text[:50]!r}")
+            print(f"    {f.path.as_posix()}:{f.line}  {f.key}{extra}  {ascii(f.text[:50])}")
         print("\nDry run. Re-run with --apply to write the changes.")
         return 0
 

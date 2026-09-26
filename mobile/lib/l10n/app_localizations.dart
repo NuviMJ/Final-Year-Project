@@ -122,18 +122,6 @@ abstract class AppLocalizations {
   /// **'Medication names stay in English'**
   String get languageSubtitle;
 
-  /// No description provided for @languageEnglish.
-  ///
-  /// In en, this message translates to:
-  /// **'English'**
-  String get languageEnglish;
-
-  /// Always written in Sinhala, in both locales
-  ///
-  /// In en, this message translates to:
-  /// **'සිංහල'**
-  String get languageSinhala;
-
   /// No description provided for @latestResultTitle.
   ///
   /// In en, this message translates to:
@@ -242,41 +230,11 @@ abstract class AppLocalizations {
   /// **'Trends'**
   String get navTrends;
 
-  /// No description provided for @doNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Do next'**
-  String get doNext;
-
-  /// No description provided for @actionAssessTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Start an assessment'**
-  String get actionAssessTitle;
-
-  /// No description provided for @actionAssessSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Four short steps, about two minutes'**
-  String get actionAssessSubtitle;
-
   /// No description provided for @actionHistoryTitle.
   ///
   /// In en, this message translates to:
   /// **'Your history'**
   String get actionHistoryTitle;
-
-  /// No description provided for @historyNothingYet.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing recorded yet'**
-  String get historyNothingYet;
-
-  /// No description provided for @historyOnDevice.
-  ///
-  /// In en, this message translates to:
-  /// **'{count,plural, =1{1 assessment on this device} other{{count} assessments on this device}}'**
-  String historyOnDevice(int count);
 
   /// No description provided for @actionLearnTitle.
   ///
@@ -284,35 +242,11 @@ abstract class AppLocalizations {
   /// **'Learn'**
   String get actionLearnTitle;
 
-  /// No description provided for @actionLearnSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'What your result means, and what affects it'**
-  String get actionLearnSubtitle;
-
-  /// No description provided for @latestResultLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'LATEST RESULT'**
-  String get latestResultLabel;
-
-  /// Category stays as the model returns it until Stage 2 maps the names
-  ///
-  /// In en, this message translates to:
-  /// **'{category} risk'**
-  String riskLevel(String category);
-
   /// No description provided for @noAssessmentsYet.
   ///
   /// In en, this message translates to:
   /// **'No assessments yet'**
   String get noAssessmentsYet;
-
-  /// No description provided for @completeOnePrompt.
-  ///
-  /// In en, this message translates to:
-  /// **'Complete one to see your quality-of-life risk here.'**
-  String get completeOnePrompt;
 
   /// No description provided for @modelVersion.
   ///
@@ -1141,6 +1075,702 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Health tips'**
   String get learnTipsHeading;
+
+  /// No description provided for @commonContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get commonContinue;
+
+  /// No description provided for @assessmentGetMyResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Get my result'**
+  String get assessmentGetMyResult;
+
+  /// No description provided for @assessmentDailyDose.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily dose'**
+  String get assessmentDailyDose;
+
+  /// No description provided for @assessmentWhenDidTheseStart.
+  ///
+  /// In en, this message translates to:
+  /// **'When did these start?'**
+  String get assessmentWhenDidTheseStart;
+
+  /// No description provided for @assessmentEnterNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number'**
+  String get assessmentEnterNumber;
+
+  /// No description provided for @assessmentMustBeBetween.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be between {low} and {high}'**
+  String assessmentMustBeBetween(int low, int high);
+
+  /// No description provided for @medicationsNoneSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No medicine selected yet'**
+  String get medicationsNoneSelected;
+
+  /// No description provided for @medicationsSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {max} selected'**
+  String medicationsSelectedCount(int count, int max);
+
+  /// No description provided for @medicationsContinueWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with {count} medicines'**
+  String medicationsContinueWith(int count);
+
+  /// No description provided for @medicationsAssessedSeparately.
+  ///
+  /// In en, this message translates to:
+  /// **'Each medicine is assessed separately.'**
+  String get medicationsAssessedSeparately;
+
+  /// No description provided for @medicationsCountCap.
+  ///
+  /// In en, this message translates to:
+  /// **'The model counts at most 3 other medicines, so the extra ones are not reflected in that count.'**
+  String get medicationsCountCap;
+
+  /// No description provided for @predictionSummaryLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current answers do not suggest a raised risk of quality-of-life decline. Keep taking your medication as prescribed.'**
+  String get predictionSummaryLow;
+
+  /// No description provided for @predictionSummaryMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers suggest some risk of quality-of-life decline. It would be worth mentioning these symptoms at your next appointment.'**
+  String get predictionSummaryMedium;
+
+  /// No description provided for @predictionSummaryHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers suggest a raised risk of quality-of-life decline. Consider speaking to your doctor or pharmacist soon.'**
+  String get predictionSummaryHigh;
+
+  /// No description provided for @predictionBandSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =1{{count} of {total} medicines is in the {band} band.} other{{count} of {total} medicines are in the {band} band.}}'**
+  String predictionBandSummary(int count, int total, String band);
+
+  /// No description provided for @predictionBandSummarySingle.
+  ///
+  /// In en, this message translates to:
+  /// **'1 of 1 medicine is in the {band} band.'**
+  String predictionBandSummarySingle(String band);
+
+  /// No description provided for @predictionHighestRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest risk: {medicine}'**
+  String predictionHighestRisk(String medicine);
+
+  /// No description provided for @predictionTakingThese.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking these'**
+  String get predictionTakingThese;
+
+  /// No description provided for @predictionEffectsStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Effects started'**
+  String get predictionEffectsStarted;
+
+  /// No description provided for @predictionSleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep'**
+  String get predictionSleep;
+
+  /// No description provided for @predictionSleepProblems.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep problems'**
+  String get predictionSleepProblems;
+
+  /// No description provided for @predictionActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get predictionActivity;
+
+  /// No description provided for @predictionDailySteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily steps'**
+  String get predictionDailySteps;
+
+  /// No description provided for @predictionDiet.
+  ///
+  /// In en, this message translates to:
+  /// **'Diet'**
+  String get predictionDiet;
+
+  /// No description provided for @predictionSmoker.
+  ///
+  /// In en, this message translates to:
+  /// **'Smoker'**
+  String get predictionSmoker;
+
+  /// No description provided for @predictionAlcohol.
+  ///
+  /// In en, this message translates to:
+  /// **'Alcohol'**
+  String get predictionAlcohol;
+
+  /// No description provided for @historyNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get historyNone;
+
+  /// No description provided for @historyNamesAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'{names} and {last}'**
+  String historyNamesAnd(String names, String last);
+
+  /// No description provided for @historyNoSideEffectsReported.
+  ///
+  /// In en, this message translates to:
+  /// **'No side effects reported'**
+  String get historyNoSideEffectsReported;
+
+  /// No description provided for @remindersEveryDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get remindersEveryDay;
+
+  /// No description provided for @remindersWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get remindersWeekdays;
+
+  /// No description provided for @remindersWeekends.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekends'**
+  String get remindersWeekends;
+
+  /// No description provided for @remindersEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit reminder'**
+  String get remindersEditTitle;
+
+  /// No description provided for @remindersNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New reminder'**
+  String get remindersNewTitle;
+
+  /// No description provided for @settingsYourData.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data'**
+  String get settingsYourData;
+
+  /// No description provided for @settingsConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection'**
+  String get settingsConnection;
+
+  /// No description provided for @settingsNotConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected'**
+  String get settingsNotConnected;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsResearchPrototype.
+  ///
+  /// In en, this message translates to:
+  /// **'Research prototype'**
+  String get settingsResearchPrototype;
+
+  /// No description provided for @settingsNothingStored.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing stored yet'**
+  String get settingsNothingStored;
+
+  /// No description provided for @startupTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Early detection of quality-of-life decline in long-term medication users'**
+  String get startupTagline;
+
+  /// No description provided for @trendsPeriodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get trendsPeriodMonth;
+
+  /// No description provided for @trendsPeriodQuarter.
+  ///
+  /// In en, this message translates to:
+  /// **'90 days'**
+  String get trendsPeriodQuarter;
+
+  /// No description provided for @trendsPeriodAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get trendsPeriodAll;
+
+  /// No description provided for @trendsMessageRising.
+  ///
+  /// In en, this message translates to:
+  /// **'Your risk of quality-of-life decline has been rising over this period. It would be worth discussing these symptoms with your doctor or pharmacist.'**
+  String get trendsMessageRising;
+
+  /// No description provided for @trendsMessageFalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Your risk of quality-of-life decline has been falling over this period. Keep taking your medication as prescribed.'**
+  String get trendsMessageFalling;
+
+  /// No description provided for @trendsMessageSteady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your risk of quality-of-life decline has stayed broadly steady over this period.'**
+  String get trendsMessageSteady;
+
+  /// No description provided for @trendsMessageUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete at least two assessments to see how your risk is moving.'**
+  String get trendsMessageUnknown;
+
+  /// No description provided for @trendsRising.
+  ///
+  /// In en, this message translates to:
+  /// **'Rising'**
+  String get trendsRising;
+
+  /// No description provided for @trendsFalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Falling'**
+  String get trendsFalling;
+
+  /// No description provided for @trendsSteady.
+  ///
+  /// In en, this message translates to:
+  /// **'Steady'**
+  String get trendsSteady;
+
+  /// No description provided for @trendsNotEnoughData.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough data'**
+  String get trendsNotEnoughData;
+
+  /// No description provided for @trendsNoneInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No assessments in this period'**
+  String get trendsNoneInPeriod;
+
+  /// No description provided for @trendsOneSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'One assessment so far'**
+  String get trendsOneSoFar;
+
+  /// No description provided for @riskLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get riskLow;
+
+  /// No description provided for @riskMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get riskMedium;
+
+  /// No description provided for @riskHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get riskHigh;
+
+  /// No description provided for @sideEffectAbdominalPain.
+  ///
+  /// In en, this message translates to:
+  /// **'Abdominal Pain'**
+  String get sideEffectAbdominalPain;
+
+  /// No description provided for @sideEffectAnxiety.
+  ///
+  /// In en, this message translates to:
+  /// **'Anxiety'**
+  String get sideEffectAnxiety;
+
+  /// No description provided for @sideEffectConstipation.
+  ///
+  /// In en, this message translates to:
+  /// **'Constipation'**
+  String get sideEffectConstipation;
+
+  /// No description provided for @sideEffectDiarrhea.
+  ///
+  /// In en, this message translates to:
+  /// **'Diarrhea'**
+  String get sideEffectDiarrhea;
+
+  /// No description provided for @sideEffectDizziness.
+  ///
+  /// In en, this message translates to:
+  /// **'Dizziness'**
+  String get sideEffectDizziness;
+
+  /// No description provided for @sideEffectDryCough.
+  ///
+  /// In en, this message translates to:
+  /// **'Dry cough'**
+  String get sideEffectDryCough;
+
+  /// No description provided for @sideEffectDryMouth.
+  ///
+  /// In en, this message translates to:
+  /// **'Dry mouth'**
+  String get sideEffectDryMouth;
+
+  /// No description provided for @sideEffectFatigue.
+  ///
+  /// In en, this message translates to:
+  /// **'Fatigue'**
+  String get sideEffectFatigue;
+
+  /// No description provided for @sideEffectHeadache.
+  ///
+  /// In en, this message translates to:
+  /// **'Headache'**
+  String get sideEffectHeadache;
+
+  /// No description provided for @sideEffectHeartburn.
+  ///
+  /// In en, this message translates to:
+  /// **'Heartburn'**
+  String get sideEffectHeartburn;
+
+  /// No description provided for @sideEffectHypoglycemia.
+  ///
+  /// In en, this message translates to:
+  /// **'Low blood sugar'**
+  String get sideEffectHypoglycemia;
+
+  /// No description provided for @sideEffectInsomnia.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep problems'**
+  String get sideEffectInsomnia;
+
+  /// No description provided for @sideEffectLiverToxicity.
+  ///
+  /// In en, this message translates to:
+  /// **'Liver problems'**
+  String get sideEffectLiverToxicity;
+
+  /// No description provided for @sideEffectMusclePain.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscle Pain'**
+  String get sideEffectMusclePain;
+
+  /// No description provided for @sideEffectNausea.
+  ///
+  /// In en, this message translates to:
+  /// **'Nausea'**
+  String get sideEffectNausea;
+
+  /// No description provided for @sideEffectPalpitations.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart racing'**
+  String get sideEffectPalpitations;
+
+  /// No description provided for @sideEffectRash.
+  ///
+  /// In en, this message translates to:
+  /// **'Rash'**
+  String get sideEffectRash;
+
+  /// No description provided for @sideEffectStomachPain.
+  ///
+  /// In en, this message translates to:
+  /// **'Stomach Pain'**
+  String get sideEffectStomachPain;
+
+  /// No description provided for @sideEffectSweating.
+  ///
+  /// In en, this message translates to:
+  /// **'Sweating'**
+  String get sideEffectSweating;
+
+  /// No description provided for @sideEffectSwelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Swelling'**
+  String get sideEffectSwelling;
+
+  /// No description provided for @sideEffectWeightGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight Gain'**
+  String get sideEffectWeightGain;
+
+  /// No description provided for @severityMild.
+  ///
+  /// In en, this message translates to:
+  /// **'Mild'**
+  String get severityMild;
+
+  /// No description provided for @severityModerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get severityModerate;
+
+  /// No description provided for @severitySevere.
+  ///
+  /// In en, this message translates to:
+  /// **'Severe'**
+  String get severitySevere;
+
+  /// No description provided for @genderFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get genderFemale;
+
+  /// No description provided for @genderMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get genderMale;
+
+  /// No description provided for @valueNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get valueNo;
+
+  /// No description provided for @valueYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get valueYes;
+
+  /// No description provided for @alcoholNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No alcohol'**
+  String get alcoholNone;
+
+  /// No description provided for @alcoholOccasional.
+  ///
+  /// In en, this message translates to:
+  /// **'Occasional'**
+  String get alcoholOccasional;
+
+  /// No description provided for @alcoholFrequent.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequent'**
+  String get alcoholFrequent;
+
+  /// No description provided for @levelLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get levelLow;
+
+  /// No description provided for @levelMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get levelMedium;
+
+  /// No description provided for @levelHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get levelHigh;
+
+  /// No description provided for @dietUnhealthy.
+  ///
+  /// In en, this message translates to:
+  /// **'Unhealthy'**
+  String get dietUnhealthy;
+
+  /// No description provided for @dietMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get dietMedium;
+
+  /// No description provided for @dietHealthy.
+  ///
+  /// In en, this message translates to:
+  /// **'Healthy'**
+  String get dietHealthy;
+
+  /// No description provided for @fieldAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get fieldAge;
+
+  /// No description provided for @fieldGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get fieldGender;
+
+  /// No description provided for @fieldSmoker.
+  ///
+  /// In en, this message translates to:
+  /// **'Smoker'**
+  String get fieldSmoker;
+
+  /// No description provided for @fieldAlcoholUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Alcohol use'**
+  String get fieldAlcoholUse;
+
+  /// No description provided for @fieldSleepQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep quality'**
+  String get fieldSleepQuality;
+
+  /// No description provided for @fieldPhysicalActivityLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Physical activity level'**
+  String get fieldPhysicalActivityLevel;
+
+  /// No description provided for @fieldDailySteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily steps'**
+  String get fieldDailySteps;
+
+  /// No description provided for @fieldDietaryHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'Dietary habits'**
+  String get fieldDietaryHabits;
+
+  /// No description provided for @fieldSleepDisorders.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep disorders'**
+  String get fieldSleepDisorders;
+
+  /// No description provided for @fieldTreatmentDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Treatment duration days'**
+  String get fieldTreatmentDuration;
+
+  /// No description provided for @fieldAgeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient age in years'**
+  String get fieldAgeHelp;
+
+  /// No description provided for @fieldGenderHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient gender'**
+  String get fieldGenderHelp;
+
+  /// No description provided for @fieldSmokerHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Current smoker'**
+  String get fieldSmokerHelp;
+
+  /// No description provided for @fieldAlcoholUseHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Alcohol consumption'**
+  String get fieldAlcoholUseHelp;
+
+  /// No description provided for @fieldSleepQualityHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-rated sleep quality (1 = worst, 10 = best)'**
+  String get fieldSleepQualityHelp;
+
+  /// No description provided for @fieldPhysicalActivityLevelHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'General physical activity level'**
+  String get fieldPhysicalActivityLevelHelp;
+
+  /// No description provided for @fieldDailyStepsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Typical daily step count'**
+  String get fieldDailyStepsHelp;
+
+  /// No description provided for @fieldDietaryHabitsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'General diet quality'**
+  String get fieldDietaryHabitsHelp;
+
+  /// No description provided for @fieldSleepDisordersHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnosed sleep disorder'**
+  String get fieldSleepDisordersHelp;
+
+  /// No description provided for @fieldTreatmentDurationHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Days on this medication so far'**
+  String get fieldTreatmentDurationHelp;
+
+  /// No description provided for @fieldOnsetHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Days from starting the drug until the side effect appeared'**
+  String get fieldOnsetHelp;
+
+  /// No description provided for @fieldDosageHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Total daily dose (mg; international units for Insulin)'**
+  String get fieldDosageHelp;
 }
 
 class _AppLocalizationsDelegate

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/symptom_report.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../core/localization/model_values.dart';
 
 /// The side effects step: whether there are any, and if so which.
 class SymptomSelector extends StatefulWidget {
@@ -268,7 +269,7 @@ class _SymptomTile extends StatelessWidget {
             onChanged: enabled ? (_) => onToggle() : null,
             controlAffinity: ListTileControlAffinity.leading,
             title: Text(
-              SymptomReport.labelFor(name),
+              sideEffectName(AppLocalizations.of(context), name),
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: _selected ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -288,7 +289,10 @@ class _SymptomTile extends StatelessWidget {
                             .map((String option) => ButtonSegment<String>(
                                   value: option,
                                   label:
-                                      Text(option, textAlign: TextAlign.center),
+                                      Text(
+                                      valueLabel(AppLocalizations.of(context),
+                                          'Severity', option),
+                                      textAlign: TextAlign.center),
                                 ))
                             .toList(),
                         selected: <String>{report!.severity},

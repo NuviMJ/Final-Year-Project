@@ -10,6 +10,7 @@ import '../../medications/domain/medication.dart';
 import '../data/notification_service.dart';
 import '../data/reminder_store.dart';
 import '../domain/reminder.dart';
+import 'reminder_text.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Creates or edits a reminder.
@@ -45,7 +46,8 @@ class _EditReminderScreenState extends ConsumerState<EditReminderScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit reminder' : 'New reminder'),
+        title: Text(
+            _isEditing ? l10n.remindersEditTitle : l10n.remindersNewTitle),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => context.go(AppRoutes.reminders),
@@ -259,7 +261,7 @@ class _Form extends StatelessWidget {
                 children: <Widget>[
                   for (int day = 1; day <= 7; day++)
                     FilterChip(
-                      label: Text(Reminder.weekdayLabels[day - 1]),
+                      label: Text(weekdayLabel(l10n, day)),
                       selected: weekdays.contains(day),
                       onSelected: (_) => onToggleDay(day),
                     ),

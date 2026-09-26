@@ -38,15 +38,4 @@ class SymptomReport {
     'Stomach Pain',
     'Muscle Pain',
   ];
-
-  /// The model's own labels, in words a patient would use.
-  static String labelFor(String value) => switch (value) {
-        'Insomnia' => 'Sleep problems',
-        'Dry Cough' => 'Dry cough',
-        'Dry Mouth' => 'Dry mouth',
-        'Liver Toxicity' => 'Liver problems',
-        'Hypoglycemia' => 'Low blood sugar',
-        'Palpitations' => 'Heart racing',
-        _ => value,
-      };
 }

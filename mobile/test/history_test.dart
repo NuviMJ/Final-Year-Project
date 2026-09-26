@@ -6,6 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qolguard/features/history/data/assessment_store.dart';
 import 'package:qolguard/features/history/domain/assessment_record.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
+import 'package:flutter/widgets.dart';
+import 'package:qolguard/l10n/app_localizations.dart';
+import 'package:qolguard/features/history/presentation/record_text.dart';
+
+final AppLocalizations _en = lookupAppLocalizations(const Locale('en'));
 
 AssessmentRecord _record({
   required DateTime takenAt,
@@ -70,7 +75,7 @@ void main() {
     });
 
     test('summarises the side effect with its severity', () {
-      expect(_record(takenAt: DateTime(2026)).sideEffectLabel,
+      expect(_record(takenAt: DateTime(2026)).sideEffectLabel(_en),
           'Fatigue · Mild');
     });
   });
@@ -248,7 +253,7 @@ void main() {
 
       expect(restored.medicines.length, 2);
       expect(restored.symptoms.length, 2);
-      expect(restored.medicinesLabel, 'Omeprazole and Metformin');
+      expect(restored.medicinesLabel(_en), 'Omeprazole and Metformin');
       // The worst medicine is the one the list and the home card name.
       expect(restored.medicationName, 'Omeprazole');
       expect(restored.prediction!.riskCategory, 'Medium');
@@ -272,7 +277,7 @@ void main() {
       expect(restored.hasPrediction, isFalse);
       expect(restored.prediction, isNull);
       expect(restored.medicines.single.name, 'Metformin');
-      expect(restored.sideEffectLabel, 'No side effects reported');
+      expect(restored.sideEffectLabel(_en), 'No side effects reported');
     });
   });
 

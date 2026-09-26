@@ -368,6 +368,8 @@ class _SelectionBar extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final bool enabled = selectedCount > 0 && !isStarting;
 
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
     return Material(
       elevation: 8,
       color: theme.colorScheme.surface,
@@ -381,15 +383,15 @@ class _SelectionBar extends StatelessWidget {
             children: <Widget>[
               Text(
                 selectedCount == 0
-                    ? 'No medicine selected yet'
-                    : '$selectedCount of ${AssessmentController.maxMedications}'
-                        ' selected',
+                    ? l10n.medicationsNoneSelected
+                    : l10n.medicationsSelectedCount(
+                        selectedCount, AssessmentController.maxMedications),
                 style: theme.textTheme.labelLarge,
               ),
               if (selectedCount > 1) ...<Widget>[
                 const SizedBox(height: 4),
                 Text(
-                  _explanation(selectedCount),
+                  _explanation(l10n, selectedCount),
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
@@ -409,8 +411,8 @@ class _SelectionBar extends StatelessWidget {
                           )
                         : Text(
                             selectedCount <= 1
-                                ? 'Continue'
-                                : 'Continue with $selectedCount medicines',
+                                ? l10n.commonContinue
+                                : l10n.medicationsContinueWith(selectedCount),
                           ),
                   ),
                 ),
@@ -424,11 +426,8 @@ class _SelectionBar extends StatelessWidget {
 
   /// Says plainly that each medicine is scored on its own, and warns when the
   /// model's own cap on concomitant medicines has been passed.
-  String _explanation(int count) {
-    const String base = 'Each medicine is assessed separately.';
-    return count > 4
-        ? '$base The model counts at most 3 other medicines, so the extra '
-            'ones are not reflected in that count.'
-        : base;
+  String _explanation(AppLocalizations l10n, int count) {
+    final String base = l10n.medicationsAssessedSeparately;
+    return count > 4 ? '$base ${l10n.medicationsCountCap}' : base;
   }
 }

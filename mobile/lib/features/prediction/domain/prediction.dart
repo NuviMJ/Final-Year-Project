@@ -41,19 +41,4 @@ class Prediction {
         'Medium' => AppColors.riskMedium,
         _ => AppColors.riskHigh,
       };
-
-  /// Wording chosen to prompt a conversation, never to instruct. The system is
-  /// decision support: it must not tell a patient what to do about their
-  /// medication.
-  String get summary => switch (riskCategory) {
-        'Low' =>
-          'Your current answers do not suggest a raised risk of quality-of-life '
-              'decline. Keep taking your medication as prescribed.',
-        'Medium' =>
-          'Your answers suggest some risk of quality-of-life decline. It would '
-              'be worth mentioning these symptoms at your next appointment.',
-        _ =>
-          'Your answers suggest a raised risk of quality-of-life decline. '
-              'Consider speaking to your doctor or pharmacist soon.',
-      };
 }

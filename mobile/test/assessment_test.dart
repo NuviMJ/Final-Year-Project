@@ -9,9 +9,13 @@ import 'package:qolguard/features/assessment/domain/onset_band.dart';
 import 'package:qolguard/features/assessment/domain/sleep_quality_scale.dart';
 import 'package:qolguard/features/assessment/domain/symptom_report.dart';
 import 'package:qolguard/features/assessment/presentation/option_labels.dart';
+import 'package:qolguard/core/localization/model_values.dart';
 import 'package:qolguard/l10n/app_localizations.dart';
 import 'package:qolguard/features/medications/domain/medication.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
+import 'package:qolguard/features/prediction/presentation/prediction_text.dart';
+
+final AppLocalizations _en = lookupAppLocalizations(const Locale('en'));
 
 /// A cut-down copy of what `GET /api/v1/schema` returns, covering one field of
 /// each kind the form has to render.
@@ -617,8 +621,8 @@ void main() {
 
       // The system is decision support; it must never tell a patient to change
       // or stop a medication.
-      expect(high.summary.toLowerCase(), contains('doctor'));
-      expect(high.summary.toLowerCase(), isNot(contains('stop taking')));
+      expect(high.summary(_en).toLowerCase(), contains('doctor'));
+      expect(high.summary(_en).toLowerCase(), isNot(contains('stop taking')));
     });
   });
 
@@ -665,6 +669,63 @@ void main() {
         expect(sinhala, isNot(english), reason: '$english is untranslated');
       }
       expect(pairs.map(((String, String) p) => p.$2).toSet().length, pairs.length);
+    });
+  });
+
+  group('Model value labels', () {
+    final AppLocalizations si = lookupAppLocalizations(const Locale('si'));
+
+    // Every Side_Effect value in the backend's feature schema.
+    const List<String> sideEffects = <String>[
+      'Abdominal Pain', 'Anxiety', 'Constipation', 'Diarrhea', 'Dizziness',
+      'Dry Cough', 'Dry Mouth', 'Fatigue', 'Headache', 'Heartburn',
+      'Hypoglycemia', 'Insomnia', 'Liver Toxicity', 'Muscle Pain', 'Nausea',
+      'Palpitations', 'Rash', 'Stomach Pain', 'Sweating', 'Swelling',
+      'Weight Gain',
+    ];
+
+    test('English reads as it did before', () {
+      expect(sideEffectName(_en, 'Insomnia'), 'Sleep problems');
+      expect(sideEffectName(_en, 'Dizziness'), 'Dizziness');
+      expect(valueLabel(_en, 'Alcohol_Use', 'No_Alcohol'), 'No alcohol');
+      expect(valueLabel(_en, 'Dietary_Habits', 'unhealthy'), 'Unhealthy');
+      expect(riskLabel(_en, 'High'), 'High');
+    });
+
+    test('every side effect has its own Sinhala name', () {
+      final Set<String> names = <String>{};
+      for (final String value in sideEffects) {
+        final String name = sideEffectName(si, value);
+        expect(name, isNot(value), reason: value);
+        names.add(name);
+      }
+      expect(names.length, sideEffects.length);
+    });
+
+    test('every categorical answer has a Sinhala label', () {
+      const Map<String, List<String>> fields = <String, List<String>>{
+        'Gender': <String>['Female', 'Male'],
+        'Smoker': <String>['No', 'Yes'],
+        'Sleep_Disorders': <String>['no', 'yes'],
+        'Alcohol_Use': <String>['No_Alcohol', 'Occasional', 'Frequent'],
+        'Physical_Activity_Level': <String>['low', 'medium', 'high'],
+        'Dietary_Habits': <String>['unhealthy', 'medium', 'healthy'],
+        'Severity': <String>['Mild', 'Moderate', 'Severe'],
+      };
+      fields.forEach((String field, List<String> values) {
+        for (final String value in values) {
+          expect(valueLabel(si, field, value), isNot(humanise(value)),
+              reason: '$field $value');
+        }
+      });
+      for (final String band in <String>['Low', 'Medium', 'High']) {
+        expect(riskLabel(si, band), isNot(band));
+      }
+    });
+
+    test('an unknown value from a retrained model still shows', () {
+      expect(valueLabel(si, 'New_Field', 'some_value'), 'Some value');
+      expect(sideEffectName(si, 'Tinnitus'), 'Tinnitus');
     });
   });
 }
