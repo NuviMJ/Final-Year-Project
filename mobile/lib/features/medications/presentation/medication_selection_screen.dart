@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/api_error_text.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -11,6 +12,7 @@ import '../../assessment/data/schema_repository.dart';
 import '../../assessment/domain/field_spec.dart';
 import '../data/medication_repository.dart';
 import '../domain/medication.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Step one of the assessment: which medications are being taken, and at what
 /// dose.
@@ -47,21 +49,22 @@ class _MedicationSelectionScreenState
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<List<Medication>> medications =
         ref.watch(medicationsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select your medications'),
+        title: Text(l10n.medicationsSelectYourMedications),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
+          tooltip: l10n.assessmentBack,
           onPressed: () => context.go(AppRoutes.home),
         ),
       ),
       body: SafeArea(
         child: medications.when(
-          loading: () => const AppLoadingView(message: 'Loading medications…'),
+          loading: () => AppLoadingView(message: l10n.medicationsLoadingMedications),
           error: (Object error, StackTrace _) => AppErrorView(
             error: error,
             onRetry: () => ref.invalidate(medicationsProvider),
@@ -82,6 +85,7 @@ class _MedicationSelectionScreenState
   }
 
   Widget _buildList(List<Medication> all) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<Medication> visible = _filter(all);
     final ThemeData theme = Theme.of(context);
 
@@ -90,9 +94,7 @@ class _MedicationSelectionScreenState
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Text(
-            'Choose every medicine you take regularly, up to '
-            '${AssessmentController.maxMedications}. '
-            'Check the daily dose shown and change it if it is not yours.',
+            l10n.medicationsChooseEvery(AssessmentController.maxMedications),
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
@@ -101,9 +103,9 @@ class _MedicationSelectionScreenState
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: TextField(
             onChanged: (String value) => setState(() => _query = value),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
-              hintText: 'Search by name or drug class',
+              hintText: l10n.medicationsSearchByNameOr,
               border: OutlineInputBorder(),
             ),
           ),
@@ -112,7 +114,7 @@ class _MedicationSelectionScreenState
           Expanded(
             child: Center(
               child: Text(
-                'No medication matches "$_query".',
+                l10n.medicationsNoMatch(_query),
                 style: theme.textTheme.bodyMedium,
               ),
             ),
@@ -149,6 +151,7 @@ class _MedicationSelectionScreenState
   }
 
   void _toggle(Medication drug) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     if (_selected.containsKey(drug.name)) {
       setState(() => _selected.remove(drug.name));
       return;
@@ -158,8 +161,7 @@ class _MedicationSelectionScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'You can assess up to ${AssessmentController.maxMedications} '
-            'medicines at a time.',
+            l10n.medicationsMaxAtATime(AssessmentController.maxMedications),
           ),
         ),
       );
@@ -212,7 +214,8 @@ class _MedicationSelectionScreenState
     } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error.message)));
+          .showSnackBar(SnackBar(
+              content: Text(error.localized(AppLocalizations.of(context)))));
     } finally {
       if (mounted) setState(() => _starting = false);
     }
@@ -244,6 +247,7 @@ class _MedicationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Card(
@@ -281,7 +285,7 @@ class _MedicationTile extends StatelessWidget {
         trailing: _selected
             ? IconButton(
                 icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Change the dose',
+                tooltip: l10n.medicationsChangeTheDose,
                 onPressed: onEditDose,
               )
             : null,
@@ -305,6 +309,7 @@ class _DosePickerDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<double> options = medication.typicalDoses.isEmpty
         ? <double>[medication.doseMin, medication.defaultDose, medication.doseMax]
         : medication.typicalDoses;
@@ -320,7 +325,7 @@ class _DosePickerDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
               child: Text(
-                'How much do you take each day?',
+                l10n.medicationsHowMuchDoYou,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
@@ -338,7 +343,7 @@ class _DosePickerDialog extends StatelessWidget {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.medicationsCancel),
         ),
       ],
     );
@@ -363,6 +368,8 @@ class _SelectionBar extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final bool enabled = selectedCount > 0 && !isStarting;
 
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
     return Material(
       elevation: 8,
       color: theme.colorScheme.surface,
@@ -376,15 +383,15 @@ class _SelectionBar extends StatelessWidget {
             children: <Widget>[
               Text(
                 selectedCount == 0
-                    ? 'No medicine selected yet'
-                    : '$selectedCount of ${AssessmentController.maxMedications}'
-                        ' selected',
+                    ? l10n.medicationsNoneSelected
+                    : l10n.medicationsSelectedCount(
+                        selectedCount, AssessmentController.maxMedications),
                 style: theme.textTheme.labelLarge,
               ),
               if (selectedCount > 1) ...<Widget>[
                 const SizedBox(height: 4),
                 Text(
-                  _explanation(selectedCount),
+                  _explanation(l10n, selectedCount),
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
@@ -404,8 +411,8 @@ class _SelectionBar extends StatelessWidget {
                           )
                         : Text(
                             selectedCount <= 1
-                                ? 'Continue'
-                                : 'Continue with $selectedCount medicines',
+                                ? l10n.commonContinue
+                                : l10n.medicationsContinueWith(selectedCount),
                           ),
                   ),
                 ),
@@ -419,11 +426,8 @@ class _SelectionBar extends StatelessWidget {
 
   /// Says plainly that each medicine is scored on its own, and warns when the
   /// model's own cap on concomitant medicines has been passed.
-  String _explanation(int count) {
-    const String base = 'Each medicine is assessed separately.';
-    return count > 4
-        ? '$base The model counts at most 3 other medicines, so the extra '
-            'ones are not reflected in that count.'
-        : base;
+  String _explanation(AppLocalizations l10n, int count) {
+    final String base = l10n.medicationsAssessedSeparately;
+    return count > 4 ? '$base ${l10n.medicationsCountCap}' : base;
   }
 }

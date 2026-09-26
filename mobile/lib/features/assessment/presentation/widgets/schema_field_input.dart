@@ -6,6 +6,9 @@ import '../../domain/duration_band.dart';
 import '../../domain/onset_band.dart';
 import '../../domain/sleep_quality_scale.dart';
 import '../../domain/field_spec.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../option_labels.dart';
+import '../../../../core/localization/model_values.dart';
 
 
 class SchemaFieldInput extends StatelessWidget {
@@ -36,13 +39,14 @@ class SchemaFieldInput extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            _label,
+            _label(AppLocalizations.of(context)),
             style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
-          if (spec.description != null && spec.description!.isNotEmpty) ...<Widget>[
+          if (_description(context) case final String description
+              when description.isNotEmpty) ...<Widget>[
             const SizedBox(height: 2),
             Text(
-              spec.description!,
+              description,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
@@ -83,12 +87,14 @@ class SchemaFieldInput extends StatelessWidget {
             )
           else if (spec.allowedValues!.length <= 3)
             _SegmentedInput(
+              field: spec.name,
               options: spec.allowedValues!,
               value: value as String,
               onChanged: onChanged,
             )
           else
             _DropdownInput(
+              field: spec.name,
               options: spec.allowedValues!,
               value: value as String,
               onChanged: onChanged,
@@ -106,11 +112,11 @@ class SchemaFieldInput extends StatelessWidget {
     );
   }
 
-  String get _label => switch (spec.name) {
-        'Dosage_mg' => 'Daily dose',
-        'Onset_Days' => 'When did these start?',
-        _ => spec.label,
-      };
+  String _label(AppLocalizations l10n) =>
+      fieldLabel(l10n, spec.name, spec.label);
+
+  String? _description(BuildContext context) => fieldDescription(
+      AppLocalizations.of(context), spec.name, spec.description);
 
   String? get _unit => spec.name == 'Dosage_mg' ? medication?.doseUnit : null;
 
@@ -161,11 +167,14 @@ class _WholeNumberFieldState extends State<_WholeNumberField> {
     // An empty or out-of-range entry keeps the last valid value, so the form
     // can never submit something the model has not seen.
     if (parsed == null) {
-      setState(() => _error = raw.trim().isEmpty ? null : 'Enter a number');
+      setState(() => _error = raw.trim().isEmpty
+          ? null
+          : AppLocalizations.of(context).assessmentEnterNumber);
       return;
     }
     if (parsed < low || parsed > high) {
-      setState(() => _error = 'Must be between $low and $high');
+      setState(() => _error =
+          AppLocalizations.of(context).assessmentMustBeBetween(low, high));
       return;
     }
     setState(() => _error = null);
@@ -174,6 +183,7 @@ class _WholeNumberFieldState extends State<_WholeNumberField> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final int low = widget.min.round();
     final int high = widget.max.round();
 
@@ -186,9 +196,9 @@ class _WholeNumberFieldState extends State<_WholeNumberField> {
       ],
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
-        helperText: 'Between $low and $high',
+        helperText: l10n.assessmentBetween(low, high),
         errorText: _error,
-        suffixText: 'years',
+        suffixText: l10n.assessmentYears,
       ),
       onChanged: _handle,
     );
@@ -203,6 +213,7 @@ class _LabelledScaleInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final int current = value.round();
 
     return Wrap(
@@ -211,8 +222,7 @@ class _LabelledScaleInput extends StatelessWidget {
       children: <Widget>[
         for (final int option in SleepQualityScale.values)
           ChoiceChip(
-            label: Text('${SleepQualityScale.faces[option]} '
-                '${SleepQualityScale.labels[option]}'),
+            label: Text(sleepQualityWithFace(l10n, option.toDouble())),
             selected: option == current,
             onSelected: (_) => onChanged(option.toDouble()),
           ),
@@ -229,15 +239,13 @@ class _DurationBandInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BandChips(
-      labels: <String>[for (final DurationBand b in DurationBand.all) b.label],
-      selected: DurationBand.forDays(value).label,
-      onSelected: (String label) => onChanged(
-        DurationBand.all
-            .firstWhere((DurationBand b) => b.label == label)
-            .representativeDays
-            .toDouble(),
-      ),
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return _BandChips<DurationBand>(
+      options: DurationBand.values,
+      labelOf: (DurationBand band) => band.label(l10n),
+      selected: DurationBand.forDays(value),
+      onSelected: (DurationBand band) =>
+          onChanged(band.representativeDays.toDouble()),
     );
   }
 }
@@ -250,31 +258,31 @@ class _OnsetBandInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BandChips(
-      labels: <String>[for (final OnsetBand b in OnsetBand.all) b.label],
-      selected: OnsetBand.forDays(value).label,
-      onSelected: (String label) => onChanged(
-        OnsetBand.all
-            .firstWhere((OnsetBand b) => b.label == label)
-            .representativeDays
-            .toDouble(),
-      ),
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return _BandChips<OnsetBand>(
+      options: OnsetBand.values,
+      labelOf: (OnsetBand band) => band.label(l10n),
+      selected: OnsetBand.forDays(value),
+      onSelected: (OnsetBand band) =>
+          onChanged(band.representativeDays.toDouble()),
     );
   }
 }
 
 /// Chips rather than a dropdown: a dropdown opens an overlay that the bottom
 /// bar and the action row can squeeze, hiding options.
-class _BandChips extends StatelessWidget {
+class _BandChips<T> extends StatelessWidget {
   const _BandChips({
-    required this.labels,
+    required this.options,
+    required this.labelOf,
     required this.selected,
     required this.onSelected,
   });
 
-  final List<String> labels;
-  final String selected;
-  final ValueChanged<String> onSelected;
+  final List<T> options;
+  final String Function(T option) labelOf;
+  final T selected;
+  final ValueChanged<T> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -282,11 +290,11 @@ class _BandChips extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: <Widget>[
-        for (final String label in labels)
+        for (final T option in options)
           ChoiceChip(
-            label: Text(label),
-            selected: label == selected,
-            onSelected: (_) => onSelected(label),
+            label: Text(labelOf(option)),
+            selected: option == selected,
+            onSelected: (_) => onSelected(option),
           ),
       ],
     );
@@ -362,11 +370,13 @@ class _NumericInput extends StatelessWidget {
 
 class _SegmentedInput extends StatelessWidget {
   const _SegmentedInput({
+    required this.field,
     required this.options,
     required this.value,
     required this.onChanged,
   });
 
+  final String field;
   final List<String> options;
   final String value;
   final ValueChanged<Object> onChanged;
@@ -379,7 +389,8 @@ class _SegmentedInput extends StatelessWidget {
         segments: options
             .map((String option) => ButtonSegment<String>(
                   value: option,
-                  label: Text(_humanise(option), textAlign: TextAlign.center),
+                  label: Text(valueLabel(AppLocalizations.of(context), field, option),
+                      textAlign: TextAlign.center),
                 ))
             .toList(),
         selected: <String>{value},
@@ -393,11 +404,13 @@ class _SegmentedInput extends StatelessWidget {
 
 class _DropdownInput extends StatelessWidget {
   const _DropdownInput({
+    required this.field,
     required this.options,
     required this.value,
     required this.onChanged,
   });
 
+  final String field;
   final List<String> options;
   final String value;
   final ValueChanged<Object> onChanged;
@@ -411,7 +424,7 @@ class _DropdownInput extends StatelessWidget {
       items: options
           .map((String option) => DropdownMenuItem<String>(
                 value: option,
-                child: Text(_humanise(option)),
+                child: Text(valueLabel(AppLocalizations.of(context), field, option)),
               ))
           .toList(),
       onChanged: (String? selected) {
@@ -419,12 +432,4 @@ class _DropdownInput extends StatelessWidget {
       },
     );
   }
-}
-
-/// The model's category values are machine labels — `No_Alcohol`, `unhealthy`,
-/// `mild`. They are sent to the API verbatim, but shown to the patient tidied
-/// up.
-String _humanise(String value) {
-  final String spaced = value.replaceAll('_', ' ');
-  return spaced[0].toUpperCase() + spaced.substring(1);
 }

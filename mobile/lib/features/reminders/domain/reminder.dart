@@ -29,10 +29,6 @@ class Reminder {
   /// without losing the setup.
   final bool enabled;
 
-  static const List<String> weekdayLabels = <String>[
-    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
-  ];
-
   static const Set<int> everyDay = <int>{1, 2, 3, 4, 5, 6, 7};
 
   factory Reminder.create({
@@ -71,21 +67,6 @@ class Reminder {
   /// "08:00"
   String get timeLabel =>
       '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
-
-  /// "Every day", "Weekdays", or "Mon, Wed, Fri".
-  String get daysLabel {
-    if (weekdays.length == 7) return 'Every day';
-    if (weekdays.length == 5 &&
-        weekdays.containsAll(const <int>{1, 2, 3, 4, 5})) {
-      return 'Weekdays';
-    }
-    if (weekdays.length == 2 && weekdays.containsAll(const <int>{6, 7})) {
-      return 'Weekends';
-    }
-
-    final List<int> ordered = weekdays.toList()..sort();
-    return ordered.map((int day) => weekdayLabels[day - 1]).join(', ');
-  }
 
   /// Each weekday needs its own scheduled notification, and each needs a
   /// distinct integer id for the OS. Deriving it from the reminder id plus the

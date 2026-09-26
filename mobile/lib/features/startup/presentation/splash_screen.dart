@@ -9,6 +9,7 @@ import '../../../core/widgets/app_state_views.dart';
 import '../../history/data/assessment_store.dart';
 import '../data/health_repository.dart';
 import 'widgets/pulse_line.dart';
+import '../../../l10n/app_localizations.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -131,6 +132,7 @@ class _Branding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Padding(
@@ -147,7 +149,7 @@ class _Branding extends StatelessWidget {
                 width: 280,
                 fit: BoxFit.contain,
               
-                semanticLabel: '${AppConstants.appName} logo',
+                semanticLabel: l10n.startupLogo(AppConstants.appName),
               ),
             ),
           ),
@@ -169,7 +171,7 @@ class _Branding extends StatelessWidget {
           FadeTransition(
             opacity: taglineFade,
             child: Text(
-              AppConstants.appTagline,
+              l10n.startupTagline,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -187,7 +189,7 @@ class _Branding extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'Connecting…',
+                  l10n.startupConnecting,
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),

@@ -10,6 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # Sinhala and English interface text
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
 
   # State management and dependency injection
@@ -53,6 +57,16 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Generates AppLocalizations from lib/l10n/*.arb
+  generate: true
+
+  fonts:
+    # Bundled because Roboto carries no Sinhala glyphs and not every
+    # device ships a Sinhala font.
+    - family: NotoSansSinhala
+      fonts:
+        - asset: assets/fonts/NotoSansSinhala.ttf
 
   # Only the wordmark is declared. The other files in assets/images/ are
   # unused stock artwork in a red palette that clashes with the app's teal.

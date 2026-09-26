@@ -1,13 +1,12 @@
 import '../../history/domain/assessment_record.dart';
 
 enum TrendPeriod {
-  month('30 days', 30),
-  quarter('90 days', 90),
-  all('All time', null);
+  month(30),
+  quarter(90),
+  all(null);
 
-  const TrendPeriod(this.label, this.days);
+  const TrendPeriod(this.days);
 
-  final String label;
   final int? days;
 }
 
@@ -131,20 +130,4 @@ class TrendSummary {
     );
     return total / points.length;
   }
-
-  /// Wording that describes the movement without instructing the patient.
-  String get message => switch (direction) {
-        TrendDirection.rising =>
-          'Your risk of quality-of-life decline has been rising over this '
-              'period. It would be worth discussing these symptoms with your '
-              'doctor or pharmacist.',
-        TrendDirection.falling =>
-          'Your risk of quality-of-life decline has been falling over this '
-              'period. Keep taking your medication as prescribed.',
-        TrendDirection.steady =>
-          'Your risk of quality-of-life decline has stayed broadly steady over '
-              'this period.',
-        TrendDirection.unknown =>
-          'Complete at least two assessments to see how your risk is moving.',
-      };
 }

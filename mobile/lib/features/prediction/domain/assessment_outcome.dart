@@ -91,13 +91,4 @@ class AssessmentOutcome {
     }
     return counts;
   }
-
-  /// e.g. "1 of 3 medicines is in the Medium band".
-  String get bandSummary {
-    final int total = worstPerMedication.length;
-    final String band = highest.prediction.riskCategory;
-    final int count = bandCounts[band] ?? 0;
-    return '$count of $total ${total == 1 ? 'medicine' : 'medicines'} '
-        '${count == 1 ? 'is' : 'are'} in the $band band.';
-  }
 }

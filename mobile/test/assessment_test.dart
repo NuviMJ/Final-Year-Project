@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -7,8 +8,14 @@ import 'package:qolguard/features/assessment/domain/field_spec.dart';
 import 'package:qolguard/features/assessment/domain/onset_band.dart';
 import 'package:qolguard/features/assessment/domain/sleep_quality_scale.dart';
 import 'package:qolguard/features/assessment/domain/symptom_report.dart';
+import 'package:qolguard/features/assessment/presentation/option_labels.dart';
+import 'package:qolguard/core/localization/model_values.dart';
+import 'package:qolguard/l10n/app_localizations.dart';
 import 'package:qolguard/features/medications/domain/medication.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
+import 'package:qolguard/features/prediction/presentation/prediction_text.dart';
+
+final AppLocalizations _en = lookupAppLocalizations(const Locale('en'));
 
 /// A cut-down copy of what `GET /api/v1/schema` returns, covering one field of
 /// each kind the form has to render.
@@ -234,8 +241,8 @@ void main() {
     });
 
     test('the side effect step follows the patient details step', () {
-      expect(AssessmentStep.all[0].title, 'About you');
-      expect(AssessmentStep.all[1].title, 'Side effects');
+      expect(AssessmentStep.all[0].id, AssessmentStepId.aboutYou);
+      expect(AssessmentStep.all[1].id, AssessmentStepId.sideEffects);
       expect(AssessmentStep.all.length, 3);
     });
 
@@ -525,63 +532,63 @@ void main() {
 
   group('OnsetBand', () {
     test('covers the trained range with no gap and no overlap', () {
-      expect(OnsetBand.all.first.minDays, 0);
-      expect(OnsetBand.all.last.maxDays, 31);
+      expect(OnsetBand.values.first.minDays, 0);
+      expect(OnsetBand.values.last.maxDays, 31);
 
-      for (int i = 1; i < OnsetBand.all.length; i++) {
-        expect(OnsetBand.all[i].minDays, OnsetBand.all[i - 1].maxDays + 1);
+      for (int i = 1; i < OnsetBand.values.length; i++) {
+        expect(OnsetBand.values[i].minDays, OnsetBand.values[i - 1].maxDays + 1);
       }
     });
 
     test('every band sends a value inside its own range', () {
-      for (final OnsetBand band in OnsetBand.all) {
+      for (final OnsetBand band in OnsetBand.values) {
         expect(band.contains(band.representativeDays.toDouble()), isTrue,
-            reason: '${band.label} sends a value outside itself');
+            reason: '${band.name} sends a value outside itself');
       }
     });
 
     test('a stored day count maps back to the band the patient chose', () {
-      expect(OnsetBand.forDays(4).label, 'Within a few days');
-      expect(OnsetBand.forDays(11).label, '1 to 2 weeks');
-      expect(OnsetBand.forDays(23).label, '3 to 4 weeks');
-      expect(OnsetBand.forDays(999).label, '3 to 4 weeks');
+      expect(OnsetBand.forDays(4), OnsetBand.withinDays);
+      expect(OnsetBand.forDays(11), OnsetBand.weeks1To2);
+      expect(OnsetBand.forDays(23), OnsetBand.weeks3To4);
+      expect(OnsetBand.forDays(999), OnsetBand.weeks3To4);
     });
   });
 
   group('DurationBand', () {
     test('covers the trained range with no gap and no overlap', () {
-      expect(DurationBand.all.first.minDays, 1);
-      expect(DurationBand.all.last.maxDays, 1825);
+      expect(DurationBand.values.first.minDays, 1);
+      expect(DurationBand.values.last.maxDays, 1825);
 
-      for (int i = 1; i < DurationBand.all.length; i++) {
-        expect(DurationBand.all[i].minDays,
-            DurationBand.all[i - 1].maxDays + 1,
-            reason: 'band ${DurationBand.all[i].label} does not abut the one '
+      for (int i = 1; i < DurationBand.values.length; i++) {
+        expect(DurationBand.values[i].minDays,
+            DurationBand.values[i - 1].maxDays + 1,
+            reason: 'band ${DurationBand.values[i].name} does not abut the one '
                 'before it');
       }
     });
 
     test('every band sends a value inside its own range', () {
-      for (final DurationBand band in DurationBand.all) {
+      for (final DurationBand band in DurationBand.values) {
         expect(band.contains(band.representativeDays.toDouble()), isTrue,
-            reason: '${band.label} sends a value outside itself');
+            reason: '${band.name} sends a value outside itself');
       }
     });
 
     test('a stored day count maps back to the band the patient chose', () {
-      expect(DurationBand.forDays(45).label, 'Less than 3 months');
-      expect(DurationBand.forDays(136).label, '3 to 6 months');
-      expect(DurationBand.forDays(274).label, '6 to 12 months');
-      expect(DurationBand.forDays(548).label, '1 to 2 years');
-      expect(DurationBand.forDays(1278).label, 'More than 2 years');
+      expect(DurationBand.forDays(45), DurationBand.under3Months);
+      expect(DurationBand.forDays(136), DurationBand.months3To6);
+      expect(DurationBand.forDays(274), DurationBand.months6To12);
+      expect(DurationBand.forDays(548), DurationBand.years1To2);
+      expect(DurationBand.forDays(1278), DurationBand.over2Years);
     });
 
     test('a day count outside the trained range still resolves to a band', () {
       // The schema midpoint seeds this field at 913 days before the patient
       // answers, and a stored assessment could predate a range change.
-      expect(DurationBand.forDays(913).label, 'More than 2 years');
-      expect(DurationBand.forDays(0).label, 'Less than 3 months');
-      expect(DurationBand.forDays(99999).label, 'More than 2 years');
+      expect(DurationBand.forDays(913), DurationBand.over2Years);
+      expect(DurationBand.forDays(0), DurationBand.under3Months);
+      expect(DurationBand.forDays(99999), DurationBand.over2Years);
     });
   });
 
@@ -614,8 +621,8 @@ void main() {
 
       // The system is decision support; it must never tell a patient to change
       // or stop a medication.
-      expect(high.summary.toLowerCase(), contains('doctor'));
-      expect(high.summary.toLowerCase(), isNot(contains('stop taking')));
+      expect(high.summary(_en).toLowerCase(), contains('doctor'));
+      expect(high.summary(_en).toLowerCase(), isNot(contains('stop taking')));
     });
   });
 
@@ -632,18 +639,93 @@ void main() {
       expect(SleepQualityScale.covers(0, 10), isFalse);
     });
 
-    test('every value has a word a patient can choose between', () {
-      for (final int value in SleepQualityScale.values) {
-        expect(SleepQualityScale.labels[value], isNotEmpty);
-      }
-      expect(SleepQualityScale.labelFor(4), 'Very poor');
-      expect(SleepQualityScale.labelFor(7), 'Good');
-      expect(SleepQualityScale.labelFor(9), 'Excellent');
+    test('a value outside the scale still resolves to a level', () {
+      expect(SleepQualityScale.levelFor(1), 4);
+      expect(SleepQualityScale.levelFor(6.6), 7);
+      expect(SleepQualityScale.levelFor(99), 9);
+    });
+  });
+
+  group('Answer option labels', () {
+    final AppLocalizations en = lookupAppLocalizations(const Locale('en'));
+    final AppLocalizations si = lookupAppLocalizations(const Locale('si'));
+
+    test('English labels read as before', () {
+      expect(DurationBand.over2Years.label(en), 'More than 2 years');
+      expect(OnsetBand.withinDays.label(en), 'Within a few days');
+      expect(sleepQualityLabel(en, 4), 'Very poor');
+      expect(sleepQualityLabel(en, 99), 'Excellent');
     });
 
-    test('a value outside the scale still resolves to a label', () {
-      expect(SleepQualityScale.labelFor(1), 'Very poor');
-      expect(SleepQualityScale.labelFor(99), 'Excellent');
+    test('every option has its own Sinhala label', () {
+      final List<(String, String)> pairs = <(String, String)>[
+        for (final DurationBand b in DurationBand.values) (b.label(en), b.label(si)),
+        for (final OnsetBand b in OnsetBand.values) (b.label(en), b.label(si)),
+        for (final int v in SleepQualityScale.values)
+          (sleepQualityLabel(en, v.toDouble()), sleepQualityLabel(si, v.toDouble())),
+      ];
+      for (final (String english, String sinhala) in pairs) {
+        expect(sinhala, isNotEmpty);
+        expect(sinhala, isNot(english), reason: '$english is untranslated');
+      }
+      expect(pairs.map(((String, String) p) => p.$2).toSet().length, pairs.length);
+    });
+  });
+
+  group('Model value labels', () {
+    final AppLocalizations si = lookupAppLocalizations(const Locale('si'));
+
+    // Every Side_Effect value in the backend's feature schema.
+    const List<String> sideEffects = <String>[
+      'Abdominal Pain', 'Anxiety', 'Constipation', 'Diarrhea', 'Dizziness',
+      'Dry Cough', 'Dry Mouth', 'Fatigue', 'Headache', 'Heartburn',
+      'Hypoglycemia', 'Insomnia', 'Liver Toxicity', 'Muscle Pain', 'Nausea',
+      'Palpitations', 'Rash', 'Stomach Pain', 'Sweating', 'Swelling',
+      'Weight Gain',
+    ];
+
+    test('English reads as it did before', () {
+      expect(sideEffectName(_en, 'Insomnia'), 'Sleep problems');
+      expect(sideEffectName(_en, 'Dizziness'), 'Dizziness');
+      expect(valueLabel(_en, 'Alcohol_Use', 'No_Alcohol'), 'No alcohol');
+      expect(valueLabel(_en, 'Dietary_Habits', 'unhealthy'), 'Unhealthy');
+      expect(riskLabel(_en, 'High'), 'High');
+    });
+
+    test('every side effect has its own Sinhala name', () {
+      final Set<String> names = <String>{};
+      for (final String value in sideEffects) {
+        final String name = sideEffectName(si, value);
+        expect(name, isNot(value), reason: value);
+        names.add(name);
+      }
+      expect(names.length, sideEffects.length);
+    });
+
+    test('every categorical answer has a Sinhala label', () {
+      const Map<String, List<String>> fields = <String, List<String>>{
+        'Gender': <String>['Female', 'Male'],
+        'Smoker': <String>['No', 'Yes'],
+        'Sleep_Disorders': <String>['no', 'yes'],
+        'Alcohol_Use': <String>['No_Alcohol', 'Occasional', 'Frequent'],
+        'Physical_Activity_Level': <String>['low', 'medium', 'high'],
+        'Dietary_Habits': <String>['unhealthy', 'medium', 'healthy'],
+        'Severity': <String>['Mild', 'Moderate', 'Severe'],
+      };
+      fields.forEach((String field, List<String> values) {
+        for (final String value in values) {
+          expect(valueLabel(si, field, value), isNot(humanise(value)),
+              reason: '$field $value');
+        }
+      });
+      for (final String band in <String>['Low', 'Medium', 'High']) {
+        expect(riskLabel(si, band), isNot(band));
+      }
+    });
+
+    test('an unknown value from a retrained model still shows', () {
+      expect(valueLabel(si, 'New_Field', 'some_value'), 'Some value');
+      expect(sideEffectName(si, 'Tinnitus'), 'Tinnitus');
     });
   });
 }

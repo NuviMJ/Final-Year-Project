@@ -1,8 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:qolguard/features/reminders/data/reminder_store.dart';
 import 'package:qolguard/features/reminders/domain/reminder.dart';
+import 'package:flutter/widgets.dart';
+import 'package:qolguard/l10n/app_localizations.dart';
+import 'package:qolguard/features/reminders/presentation/reminder_text.dart';
+
+final AppLocalizations _en = lookupAppLocalizations(const Locale('en'));
 
 Reminder _reminder({
   String medication = 'Atorvastatin',
@@ -23,6 +29,8 @@ Reminder _reminder({
 }
 
 void main() {
+  setUpAll(() => initializeDateFormatting('en'));
+
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Reminder labels', () {
@@ -33,17 +41,17 @@ void main() {
     });
 
     test('names common day patterns instead of listing them', () {
-      expect(_reminder().daysLabel, 'Every day');
+      expect(_reminder().daysLabel(_en), 'Every day');
       expect(
-        _reminder(weekdays: const <int>{1, 2, 3, 4, 5}).daysLabel,
+        _reminder(weekdays: const <int>{1, 2, 3, 4, 5}).daysLabel(_en),
         'Weekdays',
       );
-      expect(_reminder(weekdays: const <int>{6, 7}).daysLabel, 'Weekends');
+      expect(_reminder(weekdays: const <int>{6, 7}).daysLabel(_en), 'Weekends');
     });
 
     test('lists an irregular pattern in day order', () {
       expect(
-        _reminder(weekdays: const <int>{5, 1, 3}).daysLabel,
+        _reminder(weekdays: const <int>{5, 1, 3}).daysLabel(_en),
         'Mon, Wed, Fri',
       );
     });

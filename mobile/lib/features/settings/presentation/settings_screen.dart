@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_constants.dart';
 import '../../../core/config/env.dart';
+import '../../../core/localization/locale_store.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../history/data/assessment_store.dart';
@@ -14,6 +15,7 @@ import '../../history/domain/assessment_record.dart';
 import '../../reminders/data/reminder_store.dart';
 import '../../reminders/domain/reminder.dart';
 import '../../startup/data/health_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Where the data lives, and how to get rid of it.
 ///
@@ -26,6 +28,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final List<AssessmentRecord> assessments =
         ref.watch(assessmentHistoryProvider);
@@ -34,7 +37,7 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(AppLocalizations.of(context).settingsTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.home),
@@ -49,45 +52,48 @@ class SettingsScreen extends ConsumerWidget {
               reminders: reminders.length,
             ),
             const SizedBox(height: 28),
-            _SectionHeading('Your data'),
+            _SectionHeading(AppLocalizations.of(context).sectionLanguage),
+            const _LanguageSelector(),
+            const SizedBox(height: 28),
+            _SectionHeading(l10n.settingsYourData),
             _ActionRow(
               icon: Icons.copy_all_outlined,
-              title: 'Copy my data',
-              subtitle: 'Puts everything stored on this device on the clipboard',
+              title: l10n.settingsCopyMyData,
+              subtitle: l10n.settingsPutsEverythingStoredOn,
               onTap: assessments.isEmpty && reminders.isEmpty
                   ? null
                   : () => _copyData(context, assessments, reminders),
             ),
             _ActionRow(
               icon: Icons.delete_outline,
-              title: 'Delete everything',
-              subtitle: 'Removes all assessments and reminders permanently',
+              title: l10n.settingsDeleteEverything,
+              subtitle: l10n.settingsRemovesAllAssessmentsAnd,
               destructive: true,
               onTap: assessments.isEmpty && reminders.isEmpty
                   ? null
                   : () => _confirmDelete(context, ref),
             ),
             const SizedBox(height: 28),
-            _SectionHeading('Connection'),
-            _InfoRow(label: 'Server', value: Env.apiBaseUrl),
+            _SectionHeading(l10n.settingsConnection),
+            _InfoRow(label: l10n.settingsServer, value: Env.apiBaseUrl),
             _InfoRow(
-              label: 'Model',
+              label: l10n.settingsModel,
               value: service.maybeWhen(
                 data: (ServiceStatus status) => status.modelVersion,
-                orElse: () => 'Not connected',
+                orElse: () => l10n.settingsNotConnected,
               ),
             ),
             _InfoRow(
-              label: 'Medications',
+              label: l10n.settingsMedications,
               value: service.maybeWhen(
                 data: (ServiceStatus status) => '${status.supportedDrugs}',
                 orElse: () => '—',
               ),
             ),
             const SizedBox(height: 28),
-            _SectionHeading('About'),
-            _InfoRow(label: 'App', value: AppConstants.appName),
-            _InfoRow(label: 'Purpose', value: 'Research prototype'),
+            _SectionHeading(l10n.settingsAbout),
+            _InfoRow(label: l10n.settingsApp, value: AppConstants.appName),
+            _InfoRow(label: l10n.settingsPurpose, value: l10n.settingsResearchPrototype),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
@@ -103,7 +109,7 @@ class SettingsScreen extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      AppConstants.medicalDisclaimer,
+                      l10n.medicalDisclaimer,
                       style: theme.textTheme.bodySmall,
                     ),
                   ),
@@ -126,6 +132,7 @@ class SettingsScreen extends ConsumerWidget {
     List<AssessmentRecord> assessments,
     List<Reminder> reminders,
   ) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final String payload = const JsonEncoder.withIndent('  ').convert(
       <String, dynamic>{
         'exported_at': DateTime.now().toIso8601String(),
@@ -141,33 +148,32 @@ class SettingsScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${assessments.length} assessment'
-          '${assessments.length == 1 ? '' : 's'} copied to the clipboard',
+          l10n.settingsCopiedCount(assessments.length),
         ),
       ),
     );
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text('Delete everything?'),
-        content: const Text(
-          'All your assessments and reminders will be removed from this device. '
-          'This cannot be undone.',
+        title: Text(l10n.settingsDeleteEverything2),
+        content: Text(
+          l10n.settingsAllYourAssessmentsAnd,
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep my data'),
+            child: Text(l10n.settingsKeepMyData),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete everything'),
+            child: Text(l10n.settingsDeleteEverything),
           ),
         ],
       ),
@@ -186,7 +192,7 @@ class SettingsScreen extends ConsumerWidget {
 
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Everything has been deleted')),
+      SnackBar(content: Text(l10n.settingsEverythingHasBeenDeleted)),
     );
   }
 }
@@ -199,6 +205,7 @@ class _PrivacyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Container(
@@ -216,7 +223,7 @@ class _PrivacyCard extends StatelessWidget {
               const Icon(Icons.lock_outline, color: AppColors.primary, size: 22),
               const SizedBox(width: 10),
               Text(
-                'Your data stays here',
+                l10n.settingsYourDataStaysHere,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
@@ -226,23 +233,21 @@ class _PrivacyCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Assessments and reminders are stored only on this phone. There is '
-            'no account, and nothing is uploaded or backed up anywhere.',
+            l10n.settingsAssessmentsAndRemindersAre,
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 12),
           Text(
-            'Your answers are sent to the prediction server to be scored, and '
-            'the result comes straight back. Nothing is kept there.',
+            l10n.settingsYourAnswersAreSent,
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           Row(
             children: <Widget>[
-              _Stat(value: '$assessments', label: 'assessments'),
+              _Stat(value: '$assessments', label: l10n.settingsAssessments),
               const SizedBox(width: 28),
-              _Stat(value: '$reminders', label: 'reminders'),
+              _Stat(value: '$reminders', label: l10n.settingsReminders),
             ],
           ),
         ],
@@ -341,7 +346,9 @@ class _ActionRow extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        enabled ? subtitle : 'Nothing stored yet',
+        enabled
+            ? subtitle
+            : AppLocalizations.of(context).settingsNothingStored,
         style: theme.textTheme.bodySmall
             ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       ),
@@ -379,6 +386,51 @@ class _InfoRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LanguageSelector extends ConsumerWidget {
+  const _LanguageSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final AppLanguage selected = ref.watch(localeProvider);
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              AppLocalizations.of(context).languageSubtitle,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<AppLanguage>(
+                segments: <ButtonSegment<AppLanguage>>[
+                  for (final AppLanguage language in AppLanguage.values)
+                    ButtonSegment<AppLanguage>(
+                      value: language,
+                      label: Text(language.label),
+                    ),
+                ],
+                selected: <AppLanguage>{selected},
+                showSelectedIcon: false,
+                onSelectionChanged: (Set<AppLanguage> choice) => ref
+                    .read(localeProvider.notifier)
+                    .select(choice.first),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

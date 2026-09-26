@@ -4,12 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../../core/localization/locale_store.dart';
+import '../../../l10n/app_localizations.dart';
 import '../domain/reminder.dart';
 
 class NotificationService {
-  NotificationService(this._plugin);
+  NotificationService(this._plugin, this._l10n);
 
   final FlutterLocalNotificationsPlugin _plugin;
+
+  /// Text in the language chosen when the reminder is scheduled.
+  final AppLocalizations Function() _l10n;
 
   static const String _channelId = 'qolguard_medication_reminders';
   static const String _channelName = 'Medication reminders';
@@ -72,11 +77,12 @@ class NotificationService {
 
     if (!reminder.enabled) return;
 
+    final AppLocalizations l10n = _l10n();
     for (final int weekday in reminder.weekdays) {
       await _plugin.zonedSchedule(
         id: reminder.notificationId(weekday),
-        title: 'Time for your ${reminder.medicationName}',
-        body: 'Tap when you have taken it.',
+        title: l10n.remindersNotificationTitle(reminder.medicationName),
+        body: l10n.remindersNotificationBody,
         scheduledDate: _nextInstanceOf(weekday, reminder.hour, reminder.minute),
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
@@ -137,5 +143,8 @@ class NotificationService {
 
 final Provider<NotificationService> notificationServiceProvider =
     Provider<NotificationService>(
-  (Ref ref) => NotificationService(FlutterLocalNotificationsPlugin()),
+  (Ref ref) => NotificationService(
+    FlutterLocalNotificationsPlugin(),
+    () => lookupAppLocalizations(ref.read(localeProvider).locale),
+  ),
 );

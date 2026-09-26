@@ -1,9 +1,14 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:qolguard/features/assessment/domain/symptom_report.dart';
 import 'package:qolguard/features/history/domain/assessment_record.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
 import 'package:qolguard/features/trends/domain/trend_summary.dart';
+import 'package:qolguard/features/trends/presentation/trend_text.dart';
+import 'package:qolguard/l10n/app_localizations.dart';
+
+final AppLocalizations _en = lookupAppLocalizations(const Locale('en'));
 
 AssessmentRecord _at(
   int day,
@@ -66,7 +71,7 @@ void main() {
 
       expect(summary.hasEnoughData, isFalse);
       expect(summary.direction, TrendDirection.unknown);
-      expect(summary.message, contains('at least two'));
+      expect(summary.message(_en), contains('at least two'));
     });
 
     test('no assessments yields an empty summary rather than an error', () {
@@ -109,8 +114,8 @@ void main() {
 
       expect(summary.direction, TrendDirection.rising);
       expect(summary.change, greaterThan(0));
-      expect(summary.message, contains('rising'));
-      expect(summary.message, contains('doctor'));
+      expect(summary.message(_en), contains('rising'));
+      expect(summary.message(_en), contains('doctor'));
     });
 
     test('reports falling risk when the later half is better', () {
@@ -127,7 +132,7 @@ void main() {
 
       expect(summary.direction, TrendDirection.falling);
       expect(summary.change, lessThan(0));
-      expect(summary.message, contains('falling'));
+      expect(summary.message(_en), contains('falling'));
     });
 
     test('small variation is reported as steady, not as a trend', () {
@@ -145,7 +150,7 @@ void main() {
       );
 
       expect(summary.direction, TrendDirection.steady);
-      expect(summary.message, contains('steady'));
+      expect(summary.message(_en), contains('steady'));
     });
 
     test('catches a climb that never changes the predicted band', () {
@@ -232,7 +237,7 @@ void main() {
             now: now,
           ),
         ]) {
-          final String message = summary.message.toLowerCase();
+          final String message = summary.message(_en).toLowerCase();
           expect(message, isNot(contains('stop taking')));
           expect(message, isNot(contains('reduce your dose')));
         }

@@ -6,6 +6,9 @@ import '../../../assessment/domain/onset_band.dart';
 import '../../../assessment/domain/sleep_quality_scale.dart';
 import '../../../assessment/domain/symptom_report.dart';
 import '../../domain/assessment_outcome.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../assessment/presentation/option_labels.dart';
+import '../../../../core/localization/model_values.dart';
 
 /// What the patient told us, and the risk read back for each medicine.
 class ResultSummary extends StatelessWidget {
@@ -20,13 +23,14 @@ class ResultSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Your summary',
+          l10n.predictionYourSummary,
           style: theme.textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w700),
         ),
@@ -35,7 +39,7 @@ class ResultSummary extends StatelessWidget {
         const SizedBox(height: 16),
         _Section(
           icon: '💊',
-          title: 'Your medicines',
+          title: l10n.predictionYourMedicines,
           rows: <_Row>[
             for (final MedicationPrediction result in outcome.byRiskDescending)
               _Row(
@@ -47,35 +51,35 @@ class ResultSummary extends StatelessWidget {
         if (draft.symptoms.isNotEmpty)
           _Section(
             icon: '🩹',
-            title: 'Side effects you reported',
+            title: l10n.predictionSideEffectsYouReported,
             rows: <_Row>[
               for (final SymptomReport symptom in draft.symptoms)
                 _Row(
-                  SymptomReport.labelFor(symptom.sideEffect),
-                  symptom.severity,
+                  sideEffectName(l10n, symptom.sideEffect),
+                  valueLabel(l10n, 'Severity', symptom.severity),
                 ),
             ],
           ),
         _Section(
           icon: '📅',
-          title: 'Treatment',
+          title: l10n.predictionTreatment,
           rows: <_Row>[
-            _Row('Taking these', _band(DurationBand.fieldName)),
+            _Row(l10n.predictionTakingThese, _band(l10n, DurationBand.fieldName)),
             if (draft.symptoms.isNotEmpty)
-              _Row('Effects started', _band(OnsetBand.fieldName)),
+              _Row(l10n.predictionEffectsStarted, _band(l10n, OnsetBand.fieldName)),
           ],
         ),
         _Section(
           icon: '🌙',
-          title: 'Daily life',
+          title: l10n.predictionDailyLife,
           rows: <_Row>[
-            _Row('Sleep', _sleep()),
-            _Row('Sleep problems', _text('Sleep_Disorders')),
-            _Row('Activity', _text('Physical_Activity_Level')),
-            _Row('Daily steps', _number('Daily_Steps')),
-            _Row('Diet', _text('Dietary_Habits')),
-            _Row('Smoker', _text('Smoker')),
-            _Row('Alcohol', _text('Alcohol_Use')),
+            _Row(l10n.predictionSleep, _sleep(l10n)),
+            _Row(l10n.predictionSleepProblems, _text(l10n, 'Sleep_Disorders')),
+            _Row(l10n.predictionActivity, _text(l10n, 'Physical_Activity_Level')),
+            _Row(l10n.predictionDailySteps, _number('Daily_Steps')),
+            _Row(l10n.predictionDiet, _text(l10n, 'Dietary_Habits')),
+            _Row(l10n.predictionSmoker, _text(l10n, 'Smoker')),
+            _Row(l10n.predictionAlcohol, _text(l10n, 'Alcohol_Use')),
           ],
         ),
       ],
@@ -85,16 +89,13 @@ class ResultSummary extends StatelessWidget {
   double _value(String field) =>
       (draft.answers[field] as num?)?.toDouble() ?? 0;
 
-  String _band(String field) => field == DurationBand.fieldName
-      ? DurationBand.forDays(_value(field)).label
-      : OnsetBand.forDays(_value(field)).label;
+  String _band(AppLocalizations l10n, String field) =>
+      field == DurationBand.fieldName
+          ? DurationBand.forDays(_value(field)).label(l10n)
+          : OnsetBand.forDays(_value(field)).label(l10n);
 
-  String _sleep() {
-    final int level = _value(SleepQualityScale.fieldName).round();
-    return '${SleepQualityScale.faces[level] ?? ''} '
-            '${SleepQualityScale.labelFor(level.toDouble())}'
-        .trim();
-  }
+  String _sleep(AppLocalizations l10n) =>
+      sleepQualityWithFace(l10n, _value(SleepQualityScale.fieldName));
 
   String _number(String field) {
     final int value = _value(field).round();
@@ -108,12 +109,9 @@ class ResultSummary extends StatelessWidget {
     return out.toString();
   }
 
-  String _text(String field) {
-    final String raw = draft.answers[field]?.toString() ?? '—';
-    final String spaced = raw.replaceAll('_', ' ');
-    return spaced.isEmpty
-        ? '—'
-        : spaced[0].toUpperCase() + spaced.substring(1);
+  String _text(AppLocalizations l10n, String field) {
+    final Object? raw = draft.answers[field];
+    return raw == null ? '—' : valueLabel(l10n, field, raw.toString());
   }
 }
 
@@ -125,6 +123,7 @@ class _RiskChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Card(
@@ -135,7 +134,7 @@ class _RiskChart extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Risk by medicine',
+              l10n.predictionRiskByMedicine,
               style: theme.textTheme.titleSmall
                   ?.copyWith(fontWeight: FontWeight.w600),
             ),
@@ -156,7 +155,8 @@ class _RiskChart extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          result.prediction.riskCategory,
+                          riskLabel(AppLocalizations.of(context),
+                              result.prediction.riskCategory),
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: result.prediction.color,
                             fontWeight: FontWeight.w700,
@@ -189,7 +189,7 @@ class _RiskChart extends StatelessWidget {
                 ),
               ),
             Text(
-              'Bars show the chance of the High band for each medicine.',
+              l10n.predictionBarsShowTheChance,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),

@@ -18,6 +18,9 @@ abstract final class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      // Roboto carries no Sinhala glyphs, so Sinhala text falls through to the
+      // bundled font while Latin text keeps the default face.
+      fontFamilyFallback: const <String>['NotoSansSinhala'],
       colorScheme: scheme,
       scaffoldBackgroundColor:
           isDark ? AppColors.surfaceDark : AppColors.surfaceLight,

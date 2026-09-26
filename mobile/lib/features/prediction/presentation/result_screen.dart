@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_state_views.dart';
@@ -10,7 +9,10 @@ import '../../assessment/application/assessment_controller.dart';
 import '../data/prediction_repository.dart';
 import '../domain/assessment_outcome.dart';
 import '../domain/prediction.dart';
+import 'prediction_text.dart';
 import 'widgets/result_summary.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../core/localization/model_values.dart';
 
 /// The outcome of one assessment.
 
@@ -19,18 +21,19 @@ class ResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<AssessmentOutcome?> result =
         ref.watch(predictionControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your result'),
+        title: Text(l10n.predictionYourResult),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
         child: result.when(
-          loading: () => const AppLoadingView(
-            message: 'Analyzing your health information…',
+          loading: () => AppLoadingView(
+            message: l10n.predictionAnalyzingYourHealthInformation,
           ),
           error: (Object error, StackTrace _) => AppErrorView(
             error: error,
@@ -39,7 +42,7 @@ class ResultScreen extends ConsumerWidget {
           data: (AssessmentOutcome? outcome) =>
               outcome == null || outcome.isEmpty
                   ? AppErrorView(
-                      error: 'No result to show.',
+                      error: l10n.predictionNoResultToShow,
                       onRetry: () => context.go(AppRoutes.medications),
                     )
                   : outcome.noSideEffectsReported
@@ -58,6 +61,7 @@ class _NoSideEffectsResult extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return ListView(
@@ -79,22 +83,20 @@ class _NoSideEffectsResult extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Good news!',
+          l10n.predictionGoodNews,
           textAlign: TextAlign.center,
           style: theme.textTheme.headlineSmall
               ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Text(
-          'You haven\u2019t reported any symptoms or side effects from your '
-          'medication, which is a positive sign for your quality of life.',
+          l10n.predictionYouHaventReportedAny,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge,
         ),
         const SizedBox(height: 10),
         Text(
-          'Keep taking care of yourself and keep following your healthcare '
-          'provider\u2019s advice. 💚',
+          l10n.predictionKeepTakingCareOf,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -114,8 +116,7 @@ class _NoSideEffectsResult extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'This reflects what you told us today and is not a health '
-                  'check. ${AppConstants.medicalDisclaimer}',
+                  '${l10n.predictionNotAHealthCheck} ${l10n.medicalDisclaimer}',
                   style: theme.textTheme.bodySmall,
                 ),
               ),
@@ -128,9 +129,9 @@ class _NoSideEffectsResult extends ConsumerWidget {
             ref.read(predictionControllerProvider.notifier).reset();
             context.go(AppRoutes.medications);
           },
-          child: const Padding(
+          child: Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('Start another assessment'),
+            child: Text(l10n.predictionStartAnotherAssessment),
           ),
         ),
       ],
@@ -151,6 +152,7 @@ class _Result extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final AssessmentDraft draft = ref.watch(assessmentControllerProvider);
 
@@ -170,7 +172,7 @@ class _Result extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  prediction.riskCategory.toUpperCase(),
+                  riskLabel(l10n, prediction.riskCategory).toUpperCase(),
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: prediction.color,
                     fontWeight: FontWeight.bold,
@@ -178,7 +180,7 @@ class _Result extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text('RISK', style: theme.textTheme.labelMedium),
+                Text(l10n.historyRisk, style: theme.textTheme.labelMedium),
               ],
             ),
           ),
@@ -187,7 +189,7 @@ class _Result extends ConsumerWidget {
         Text(
           outcome.isSingle
               ? worst.medication.name
-              : 'Highest risk: ${worst.medication.name}',
+              : l10n.predictionHighestRisk(worst.medication.name),
           textAlign: TextAlign.center,
           style: theme.textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w600),
@@ -195,7 +197,7 @@ class _Result extends ConsumerWidget {
         if (!outcome.isSingle) ...<Widget>[
           const SizedBox(height: 4),
           Text(
-            outcome.bandSummary,
+            outcome.bandSummary(l10n),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -203,13 +205,13 @@ class _Result extends ConsumerWidget {
         ],
         const SizedBox(height: 16),
         Text(
-          prediction.summary,
+          prediction.summary(l10n),
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge,
         ),
         const SizedBox(height: 28),
         Text(
-          'How confident is this?',
+          l10n.predictionHowConfidentIsThis,
           style: theme.textTheme.titleSmall
               ?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -237,7 +239,7 @@ class _Result extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  AppConstants.medicalDisclaimer,
+                  l10n.medicalDisclaimer,
                   style: theme.textTheme.bodySmall,
                 ),
               ),
@@ -250,15 +252,15 @@ class _Result extends ConsumerWidget {
             ref.read(predictionControllerProvider.notifier).reset();
             context.go(AppRoutes.medications);
           },
-          child: const Padding(
+          child: Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('Start another assessment'),
+            child: Text(l10n.predictionStartAnotherAssessment),
           ),
         ),
         const SizedBox(height: 12),
         Center(
           child: Text(
-            'Model ${prediction.modelVersion}',
+            l10n.modelVersion(prediction.modelVersion),
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
@@ -295,7 +297,7 @@ class _ProbabilityBar extends StatelessWidget {
           SizedBox(
             width: 64,
             child: Text(
-              label,
+              riskLabel(AppLocalizations.of(context), label),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: isPredicted ? FontWeight.bold : FontWeight.normal,
               ),

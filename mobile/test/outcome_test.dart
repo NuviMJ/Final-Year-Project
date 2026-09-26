@@ -4,6 +4,11 @@ import 'package:qolguard/features/assessment/domain/symptom_report.dart';
 import 'package:qolguard/features/medications/domain/medication.dart';
 import 'package:qolguard/features/prediction/domain/assessment_outcome.dart';
 import 'package:qolguard/features/prediction/domain/prediction.dart';
+import 'package:flutter/widgets.dart';
+import 'package:qolguard/l10n/app_localizations.dart';
+import 'package:qolguard/features/prediction/presentation/prediction_text.dart';
+
+final AppLocalizations _en = lookupAppLocalizations(const Locale('en'));
 
 const Medication _atorvastatin = Medication(
   name: 'Atorvastatin',
@@ -128,7 +133,7 @@ void main() {
         ],
       );
 
-      expect(outcome.bandSummary, '2 of 3 medicines are in the Medium band.');
+      expect(outcome.bandSummary(_en), '2 of 3 medicines are in the Medium band.');
     });
 
     test('the summary reads correctly for a single medicine', () {
@@ -139,7 +144,7 @@ void main() {
       );
 
       expect(outcome.isSingle, isTrue);
-      expect(outcome.bandSummary, '1 of 1 medicine is in the Low band.');
+      expect(outcome.bandSummary(_en), '1 of 1 medicine is in the Low band.');
     });
 
     test('effects for one medicine come back worst first', () {

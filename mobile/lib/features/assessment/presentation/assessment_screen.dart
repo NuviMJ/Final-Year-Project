@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/api_error_text.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/app_state_views.dart';
@@ -15,7 +16,9 @@ import '../../medications/domain/medication.dart';
 import '../domain/field_spec.dart';
 import '../domain/symptom_report.dart';
 import 'widgets/schema_field_input.dart';
+import 'option_labels.dart';
 import 'widgets/symptom_selector.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// The four-step assessment, built entirely from the backend's `/schema`.
 ///
@@ -27,6 +30,7 @@ class AssessmentScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<AssessmentSchema> schema =
         ref.watch(assessmentSchemaProvider);
     final AssessmentDraft draft = ref.watch(assessmentControllerProvider);
@@ -34,9 +38,9 @@ class AssessmentScreen extends ConsumerWidget {
     if (draft.medication == null) {
       // Reached by deep link or hot restart without a medication chosen.
       return Scaffold(
-        appBar: AppBar(title: const Text('Assessment')),
+        appBar: AppBar(title: Text(l10n.assessmentAssessment)),
         body: AppErrorView(
-          error: 'No medication selected.',
+          error: l10n.assessmentNoMedicationSelected,
           onRetry: () => context.go(AppRoutes.medications),
         ),
       );
@@ -47,7 +51,7 @@ class AssessmentScreen extends ConsumerWidget {
         title: Text(
           draft.medications.length == 1
               ? draft.medication!.name
-              : '${draft.medications.length} medicines',
+              : l10n.assessmentMedicineCount(draft.medications.length),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -58,7 +62,7 @@ class AssessmentScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: schema.when(
-          loading: () => const AppLoadingView(message: 'Loading questions…'),
+          loading: () => AppLoadingView(message: l10n.assessmentLoadingQuestions),
           error: (Object error, StackTrace _) => AppErrorView(
             error: error,
             onRetry: () => ref.invalidate(assessmentSchemaProvider),
@@ -79,6 +83,7 @@ class _Form extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final AssessmentController controller =
         ref.read(assessmentControllerProvider.notifier);
@@ -101,19 +106,19 @@ class _Form extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Step ${draft.stepIndex + 1} of ${AssessmentStep.all.length}',
+                l10n.assessmentStepOf(draft.stepIndex + 1, AssessmentStep.all.length),
                 style: theme.textTheme.labelMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 4),
               Text(
-                draft.step.title,
+                draft.step.title(l10n),
                 style: theme.textTheme.headlineSmall
                     ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
-                draft.step.subtitle,
+                draft.step.subtitle(l10n),
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
@@ -185,6 +190,7 @@ class _Actions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AssessmentController controller =
         ref.read(assessmentControllerProvider.notifier);
 
@@ -198,9 +204,9 @@ class _Actions extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: isSubmitting ? null : controller.previous,
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Back'),
+                    child: Text(l10n.assessmentBack),
                   ),
                 ),
               ),
@@ -220,7 +226,9 @@ class _Actions extends ConsumerWidget {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Text(draft.isLastStep ? 'Get my result' : 'Continue'),
+                      : Text(draft.isLastStep
+                          ? l10n.assessmentGetMyResult
+                          : l10n.commonContinue),
                 ),
               ),
             ),
@@ -235,6 +243,7 @@ class _Actions extends ConsumerWidget {
     WidgetRef ref,
     AssessmentController controller,
   ) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     if (!draft.isLastStep) {
       controller.next();
       return;
@@ -279,7 +288,9 @@ class _Actions extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            error is ApiException ? error.message : 'Could not get a result.',
+            error is ApiException
+                ? error.localized(l10n)
+                : l10n.assessmentCouldNotGetResult,
           ),
         ),
       );

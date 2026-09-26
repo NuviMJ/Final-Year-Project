@@ -6,18 +6,22 @@ import 'package:intl/intl.dart';
 import '../../../core/router/app_router.dart';
 import '../data/assessment_store.dart';
 import '../domain/assessment_record.dart';
+import 'record_text.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../core/localization/model_values.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<AssessmentRecord> records =
         ref.watch(assessmentHistoryProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your history'),
+        title: Text(l10n.actionHistoryTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.home),
@@ -43,6 +47,7 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Center(
@@ -55,14 +60,13 @@ class _Empty extends StatelessWidget {
                 size: 46, color: theme.colorScheme.onSurfaceVariant),
             const SizedBox(height: 16),
             Text(
-              'No assessments yet',
+              l10n.noAssessmentsYet,
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             Text(
-              'Your results appear here once you complete an assessment. '
-              'Everything stays on this device.',
+              l10n.historyYourResultsAppearHere,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -81,6 +85,7 @@ class _HistoryTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
 
     return Dismissible(
@@ -112,10 +117,10 @@ class _HistoryTile extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const SizedBox(height: 2),
-              Text(record.medicinesLabel),
-              if (record.sideEffectLabel.isNotEmpty)
+              Text(record.medicinesLabel(l10n)),
+              if (record.sideEffectLabel(l10n).isNotEmpty)
                 Text(
-                  record.sideEffectLabel,
+                  record.sideEffectLabel(l10n),
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
@@ -128,19 +133,20 @@ class _HistoryTile extends ConsumerWidget {
   }
 
   Future<bool> _confirmDelete(BuildContext context) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text('Delete this assessment?'),
-        content: const Text('It will be removed from this device permanently.'),
+        title: Text(l10n.historyDeleteThisAssessment),
+        content: Text(l10n.historyItWillBeRemoved),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep'),
+            child: Text(l10n.historyKeep),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(l10n.historyDelete),
           ),
         ],
       ),
@@ -167,7 +173,10 @@ class _RiskChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        record.prediction?.riskCategory ?? 'None',
+        record.prediction == null
+            ? AppLocalizations.of(context).historyNone
+            : riskLabel(
+                AppLocalizations.of(context), record.prediction!.riskCategory),
         style: TextStyle(
           color: color,
           fontWeight: FontWeight.w600,

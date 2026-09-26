@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../domain/article.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Short pieces on living with long-term medication.
 ///
@@ -16,11 +17,13 @@ class LearnScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
+    final LibraryContent library = Library.of(l10n.localeName);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Learn'),
+        title: Text(l10n.actionLearnTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.home),
@@ -33,18 +36,96 @@ class LearnScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 0, 4, 16),
               child: Text(
-                'Short reads on the things the model weighs most heavily, and '
-                'what your results mean.',
+                l10n.learnShortReadsOnThe,
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             ),
-            for (final Article article in Library.articles) ...<Widget>[
+            _SectionHeading(l10n.learnArticlesHeading),
+            for (final Article article in library.articles) ...<Widget>[
               _ArticleTile(article: article),
               const SizedBox(height: 8),
             ],
+            const SizedBox(height: 16),
+            _SectionHeading(l10n.learnTipsHeading),
+            for (final TipGroup group in library.tipGroups) ...<Widget>[
+              _TipGroupCard(group: group),
+              const SizedBox(height: 12),
+            ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+      child: Text(
+        text,
+        style: Theme.of(context)
+            .textTheme
+            .titleMedium
+            ?.copyWith(fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+}
+
+class _TipGroupCard extends StatelessWidget {
+  const _TipGroupCard({required this.group});
+
+  final TipGroup group;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+            child: Row(
+              children: <Widget>[
+                Text(group.emoji, style: const TextStyle(fontSize: 20)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    group.title,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (final Tip tip in group.tips)
+            ExpansionTile(
+              shape: const Border(),
+              collapsedShape: const Border(),
+              tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              expandedAlignment: Alignment.centerLeft,
+              title: Text(tip.title, style: theme.textTheme.bodyLarge),
+              children: <Widget>[
+                Text(
+                  tip.body,
+                  style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+                ),
+              ],
+            ),
+        ],
       ),
     );
   }
@@ -100,8 +181,9 @@ class ArticleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
-    final Article? article = Library.byId(articleId);
+    final Article? article = Library.of(l10n.localeName).byId(articleId);
 
     if (article == null) {
       return Scaffold(
@@ -111,13 +193,13 @@ class ArticleScreen extends StatelessWidget {
             onPressed: () => context.go(AppRoutes.learn),
           ),
         ),
-        body: const Center(child: Text('That article is no longer available.')),
+        body: Center(child: Text(l10n.learnThatArticleIsNo)),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Learn'),
+        title: Text(l10n.actionLearnTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.learn),
