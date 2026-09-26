@@ -12,6 +12,7 @@ import 'package:qolguard/features/medications/domain/medication.dart';
 import 'package:qolguard/features/startup/data/health_repository.dart';
 import 'package:qolguard/features/startup/presentation/splash_screen.dart';
 import 'package:qolguard/features/startup/presentation/widgets/pulse_line.dart';
+import 'package:qolguard/l10n/app_localizations.dart';
 
 void main() {
   group('ApiException', () {
@@ -101,7 +102,11 @@ void main() {
               ),
             ),
           ],
-          child: const MaterialApp(home: SplashScreen()),
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SplashScreen(),
+          ),
         ),
       );
       await tester.pump();
@@ -121,7 +126,11 @@ void main() {
               (ref) => Completer<ServiceStatus>().future,
             ),
           ],
-          child: const MaterialApp(home: SplashScreen()),
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SplashScreen(),
+          ),
         ),
       );
       await tester.pump(const Duration(milliseconds: 900));

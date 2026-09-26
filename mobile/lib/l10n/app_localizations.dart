@@ -829,6 +829,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A trend needs at least two assessments to compare. Complete another to see how your risk is moving.'**
   String get trendsATrendNeedsAt;
+
+  /// No description provided for @durationUnder3Months.
+  ///
+  /// In en, this message translates to:
+  /// **'Less than 3 months'**
+  String get durationUnder3Months;
+
+  /// No description provided for @duration3To6Months.
+  ///
+  /// In en, this message translates to:
+  /// **'3 to 6 months'**
+  String get duration3To6Months;
+
+  /// No description provided for @duration6To12Months.
+  ///
+  /// In en, this message translates to:
+  /// **'6 to 12 months'**
+  String get duration6To12Months;
+
+  /// No description provided for @duration1To2Years.
+  ///
+  /// In en, this message translates to:
+  /// **'1 to 2 years'**
+  String get duration1To2Years;
+
+  /// No description provided for @durationOver2Years.
+  ///
+  /// In en, this message translates to:
+  /// **'More than 2 years'**
+  String get durationOver2Years;
+
+  /// No description provided for @onsetWithinDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Within a few days'**
+  String get onsetWithinDays;
+
+  /// No description provided for @onset1To2Weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'1 to 2 weeks'**
+  String get onset1To2Weeks;
+
+  /// No description provided for @onset3To4Weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'3 to 4 weeks'**
+  String get onset3To4Weeks;
+
+  /// No description provided for @sleepVeryPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Very poor'**
+  String get sleepVeryPoor;
+
+  /// No description provided for @sleepPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor'**
+  String get sleepPoor;
+
+  /// No description provided for @sleepFair.
+  ///
+  /// In en, this message translates to:
+  /// **'Fair'**
+  String get sleepFair;
+
+  /// No description provided for @sleepGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get sleepGood;
+
+  /// No description provided for @sleepVeryGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Very good'**
+  String get sleepVeryGood;
+
+  /// No description provided for @sleepExcellent.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent'**
+  String get sleepExcellent;
+
+  /// No description provided for @assessmentMedicineCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =1{1 medicine} other{{count} medicines}}'**
+  String assessmentMedicineCount(int count);
+
+  /// No description provided for @assessmentStepOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String assessmentStepOf(int step, int total);
+
+  /// No description provided for @assessmentBetween.
+  ///
+  /// In en, this message translates to:
+  /// **'Between {low} and {high}'**
+  String assessmentBetween(int low, int high);
+
+  /// No description provided for @assessmentChooseUpTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose up to {max}, and say how bad each one is.'**
+  String assessmentChooseUpTo(int max);
+
+  /// No description provided for @assessmentShowAllEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all effects ({count} more)'**
+  String assessmentShowAllEffects(int count);
+
+  /// No description provided for @historyNothingReportedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was reported on {date}, so no risk level was worked out for that day.'**
+  String historyNothingReportedOn(String date);
+
+  /// No description provided for @medicationsChooseEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose every medicine you take regularly, up to {max}. Check the daily dose shown and change it if it is not yours.'**
+  String medicationsChooseEvery(int max);
+
+  /// No description provided for @medicationsNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No medication matches \"{query}\".'**
+  String medicationsNoMatch(String query);
+
+  /// No description provided for @medicationsMaxAtATime.
+  ///
+  /// In en, this message translates to:
+  /// **'You can assess up to {max} medicines at a time.'**
+  String medicationsMaxAtATime(int max);
+
+  /// No description provided for @predictionNotAHealthCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'This reflects what you told us today and is not a health check.'**
+  String get predictionNotAHealthCheck;
+
+  /// No description provided for @medicalDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'QoLGuard does not diagnose medical conditions and does not replace advice from a healthcare professional. Always consult your doctor or pharmacist before changing any medication.'**
+  String get medicalDisclaimer;
+
+  /// No description provided for @remindersNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next {when}'**
+  String remindersNext(String when);
+
+  /// No description provided for @remindersTodayAt.
+  ///
+  /// In en, this message translates to:
+  /// **'today at {time}'**
+  String remindersTodayAt(String time);
+
+  /// No description provided for @remindersTomorrowAt.
+  ///
+  /// In en, this message translates to:
+  /// **'tomorrow at {time}'**
+  String remindersTomorrowAt(String time);
+
+  /// No description provided for @remindersDayAt.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} at {time}'**
+  String remindersDayAt(String day, String time);
+
+  /// No description provided for @settingsCopiedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =1{1 assessment copied to the clipboard} other{{count} assessments copied to the clipboard}}'**
+  String settingsCopiedCount(int count);
+
+  /// No description provided for @startupLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} logo'**
+  String startupLogo(String appName);
+
+  /// No description provided for @trendsSummaryLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =1{1 assessment} other{{count} assessments}} · highest {percent}%'**
+  String trendsSummaryLine(int count, String percent);
+
+  /// No description provided for @stepAboutYouTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About you'**
+  String get stepAboutYouTitle;
+
+  /// No description provided for @stepAboutYouSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your details, and how long you have been on these medicines'**
+  String get stepAboutYouSubtitle;
+
+  /// No description provided for @stepSideEffectsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Side effects'**
+  String get stepSideEffectsTitle;
+
+  /// No description provided for @stepSideEffectsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The effects you have noticed since starting'**
+  String get stepSideEffectsSubtitle;
+
+  /// No description provided for @stepDailyLifeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily life'**
+  String get stepDailyLifeTitle;
+
+  /// No description provided for @stepDailyLifeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep, activity and habits over a typical week'**
+  String get stepDailyLifeSubtitle;
+
+  /// No description provided for @medicationsSearchByNameOr.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name or drug class'**
+  String get medicationsSearchByNameOr;
 }
 
 class _AppLocalizationsDelegate

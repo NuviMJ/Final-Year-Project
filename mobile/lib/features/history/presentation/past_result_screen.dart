@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/app_state_views.dart';
 import '../data/assessment_store.dart';
@@ -15,6 +14,7 @@ import '../../assessment/domain/symptom_report.dart';
 import '../../prediction/domain/prediction.dart';
 import '../domain/assessment_record.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../assessment/presentation/option_labels.dart';
 
 class PastResultScreen extends ConsumerWidget {
   const PastResultScreen({super.key, required this.recordId});
@@ -154,7 +154,7 @@ class _Detail extends StatelessWidget {
                   if (!_hiddenAnswers.contains(entry.key))
                     _Row(
                       label: _humanise(entry.key),
-                      value: _answerLabel(entry.key, entry.value),
+                      value: _answerLabel(l10n, entry.key, entry.value),
                     ),
               ],
             ),
@@ -175,7 +175,7 @@ class _Detail extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  AppConstants.medicalDisclaimer,
+                  l10n.medicalDisclaimer,
                   style: theme.textTheme.bodySmall,
                 ),
               ),
@@ -186,7 +186,7 @@ class _Detail extends StatelessWidget {
         if (prediction != null)
           Center(
             child: Text(
-              'Model ${prediction.modelVersion}',
+              l10n.modelVersion(prediction.modelVersion),
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
@@ -205,18 +205,16 @@ const Set<String> _hiddenAnswers = <String>{
   'Concomitant_Drug_Count',
 };
 
-String _answerLabel(String field, Object value) {
+String _answerLabel(AppLocalizations l10n, String field, Object value) {
   final double number = value is num ? value.toDouble() : 0;
   if (value is num && field == DurationBand.fieldName) {
-    return DurationBand.forDays(number).label;
+    return DurationBand.forDays(number).label(l10n);
   }
   if (value is num && field == OnsetBand.fieldName) {
-    return OnsetBand.forDays(number).label;
+    return OnsetBand.forDays(number).label(l10n);
   }
   if (value is num && field == SleepQualityScale.fieldName) {
-    return '${SleepQualityScale.faces[number.round()] ?? ''} '
-            '${SleepQualityScale.labelFor(number)}'
-        .trim();
+    return sleepQualityWithFace(l10n, number);
   }
   return _humanise(value.toString());
 }
@@ -251,9 +249,8 @@ class _NoEffectsBanner extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Nothing was reported on '
-            '${DateFormat('d MMMM yyyy').format(takenAt)}, so no risk level '
-            'was worked out for that day.',
+            l10n.historyNothingReportedOn(
+                DateFormat('d MMMM yyyy', l10n.localeName).format(takenAt)),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),

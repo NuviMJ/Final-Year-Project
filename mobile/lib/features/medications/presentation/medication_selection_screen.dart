@@ -84,6 +84,7 @@ class _MedicationSelectionScreenState
   }
 
   Widget _buildList(List<Medication> all) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<Medication> visible = _filter(all);
     final ThemeData theme = Theme.of(context);
 
@@ -92,9 +93,7 @@ class _MedicationSelectionScreenState
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Text(
-            'Choose every medicine you take regularly, up to '
-            '${AssessmentController.maxMedications}. '
-            'Check the daily dose shown and change it if it is not yours.',
+            l10n.medicationsChooseEvery(AssessmentController.maxMedications),
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
@@ -103,9 +102,9 @@ class _MedicationSelectionScreenState
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: TextField(
             onChanged: (String value) => setState(() => _query = value),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
-              hintText: 'Search by name or drug class',
+              hintText: l10n.medicationsSearchByNameOr,
               border: OutlineInputBorder(),
             ),
           ),
@@ -114,7 +113,7 @@ class _MedicationSelectionScreenState
           Expanded(
             child: Center(
               child: Text(
-                'No medication matches "$_query".',
+                l10n.medicationsNoMatch(_query),
                 style: theme.textTheme.bodyMedium,
               ),
             ),
@@ -151,6 +150,7 @@ class _MedicationSelectionScreenState
   }
 
   void _toggle(Medication drug) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     if (_selected.containsKey(drug.name)) {
       setState(() => _selected.remove(drug.name));
       return;
@@ -160,8 +160,7 @@ class _MedicationSelectionScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'You can assess up to ${AssessmentController.maxMedications} '
-            'medicines at a time.',
+            l10n.medicationsMaxAtATime(AssessmentController.maxMedications),
           ),
         ),
       );

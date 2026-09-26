@@ -182,8 +182,7 @@ class _SymptomList extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          'Choose up to ${SymptomReport.maxPerAssessment}, and say how bad '
-          'each one is.',
+          l10n.assessmentChooseUpTo(SymptomReport.maxPerAssessment),
           style: theme.textTheme.bodySmall
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
@@ -203,7 +202,7 @@ class _SymptomList extends StatelessWidget {
             onPressed: onShowAll,
             icon: const Icon(Icons.expand_more),
             label: Text(
-              'Show all effects (${options.length - visible.length} more)',
+              l10n.assessmentShowAllEffects(options.length - visible.length),
             ),
           ),
         if (atLimit)

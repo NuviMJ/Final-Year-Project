@@ -149,7 +149,7 @@ class _Branding extends StatelessWidget {
                 width: 280,
                 fit: BoxFit.contain,
               
-                semanticLabel: '${AppConstants.appName} logo',
+                semanticLabel: l10n.startupLogo(AppConstants.appName),
               ),
             ),
           ),

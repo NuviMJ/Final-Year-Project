@@ -115,7 +115,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      AppConstants.medicalDisclaimer,
+                      l10n.medicalDisclaimer,
                       style: theme.textTheme.bodySmall,
                     ),
                   ),

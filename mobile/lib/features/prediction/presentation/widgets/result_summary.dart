@@ -7,6 +7,7 @@ import '../../../assessment/domain/sleep_quality_scale.dart';
 import '../../../assessment/domain/symptom_report.dart';
 import '../../domain/assessment_outcome.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../assessment/presentation/option_labels.dart';
 
 /// What the patient told us, and the risk read back for each medicine.
 class ResultSummary extends StatelessWidget {
@@ -62,16 +63,16 @@ class ResultSummary extends StatelessWidget {
           icon: '📅',
           title: l10n.predictionTreatment,
           rows: <_Row>[
-            _Row('Taking these', _band(DurationBand.fieldName)),
+            _Row('Taking these', _band(l10n, DurationBand.fieldName)),
             if (draft.symptoms.isNotEmpty)
-              _Row('Effects started', _band(OnsetBand.fieldName)),
+              _Row('Effects started', _band(l10n, OnsetBand.fieldName)),
           ],
         ),
         _Section(
           icon: '🌙',
           title: l10n.predictionDailyLife,
           rows: <_Row>[
-            _Row('Sleep', _sleep()),
+            _Row('Sleep', _sleep(l10n)),
             _Row('Sleep problems', _text('Sleep_Disorders')),
             _Row('Activity', _text('Physical_Activity_Level')),
             _Row('Daily steps', _number('Daily_Steps')),
@@ -87,16 +88,13 @@ class ResultSummary extends StatelessWidget {
   double _value(String field) =>
       (draft.answers[field] as num?)?.toDouble() ?? 0;
 
-  String _band(String field) => field == DurationBand.fieldName
-      ? DurationBand.forDays(_value(field)).label
-      : OnsetBand.forDays(_value(field)).label;
+  String _band(AppLocalizations l10n, String field) =>
+      field == DurationBand.fieldName
+          ? DurationBand.forDays(_value(field)).label(l10n)
+          : OnsetBand.forDays(_value(field)).label(l10n);
 
-  String _sleep() {
-    final int level = _value(SleepQualityScale.fieldName).round();
-    return '${SleepQualityScale.faces[level] ?? ''} '
-            '${SleepQualityScale.labelFor(level.toDouble())}'
-        .trim();
-  }
+  String _sleep(AppLocalizations l10n) =>
+      sleepQualityWithFace(l10n, _value(SleepQualityScale.fieldName));
 
   String _number(String field) {
     final int value = _value(field).round();

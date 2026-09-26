@@ -444,8 +444,8 @@ class _BandBreakdown extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          '$total assessment${total == 1 ? '' : 's'} · '
-          'highest ${(summary.highest * 100).toStringAsFixed(0)}%',
+          l10n.trendsSummaryLine(
+              total, (summary.highest * 100).toStringAsFixed(0)),
           style: theme.textTheme.bodySmall
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),

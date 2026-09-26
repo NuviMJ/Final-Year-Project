@@ -9,8 +9,4 @@ abstract final class AppConstants {
   /// Required by the specification: the application is decision support, not a
   /// diagnosis. This wording is deliberately kept in one place so it cannot
   /// drift between screens.
-  static const String medicalDisclaimer =
-      'QoLGuard does not diagnose medical conditions and does not replace '
-      'advice from a healthcare professional. Always consult your doctor or '
-      'pharmacist before changing any medication.';
 }

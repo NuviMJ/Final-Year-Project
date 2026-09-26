@@ -7,6 +7,7 @@ import '../../domain/onset_band.dart';
 import '../../domain/sleep_quality_scale.dart';
 import '../../domain/field_spec.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../option_labels.dart';
 
 
 class SchemaFieldInput extends StatelessWidget {
@@ -188,7 +189,7 @@ class _WholeNumberFieldState extends State<_WholeNumberField> {
       ],
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
-        helperText: 'Between $low and $high',
+        helperText: l10n.assessmentBetween(low, high),
         errorText: _error,
         suffixText: l10n.assessmentYears,
       ),
@@ -205,6 +206,7 @@ class _LabelledScaleInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final int current = value.round();
 
     return Wrap(
@@ -213,8 +215,7 @@ class _LabelledScaleInput extends StatelessWidget {
       children: <Widget>[
         for (final int option in SleepQualityScale.values)
           ChoiceChip(
-            label: Text('${SleepQualityScale.faces[option]} '
-                '${SleepQualityScale.labels[option]}'),
+            label: Text(sleepQualityWithFace(l10n, option.toDouble())),
             selected: option == current,
             onSelected: (_) => onChanged(option.toDouble()),
           ),
@@ -231,15 +232,13 @@ class _DurationBandInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BandChips(
-      labels: <String>[for (final DurationBand b in DurationBand.all) b.label],
-      selected: DurationBand.forDays(value).label,
-      onSelected: (String label) => onChanged(
-        DurationBand.all
-            .firstWhere((DurationBand b) => b.label == label)
-            .representativeDays
-            .toDouble(),
-      ),
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return _BandChips<DurationBand>(
+      options: DurationBand.values,
+      labelOf: (DurationBand band) => band.label(l10n),
+      selected: DurationBand.forDays(value),
+      onSelected: (DurationBand band) =>
+          onChanged(band.representativeDays.toDouble()),
     );
   }
 }
@@ -252,31 +251,31 @@ class _OnsetBandInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BandChips(
-      labels: <String>[for (final OnsetBand b in OnsetBand.all) b.label],
-      selected: OnsetBand.forDays(value).label,
-      onSelected: (String label) => onChanged(
-        OnsetBand.all
-            .firstWhere((OnsetBand b) => b.label == label)
-            .representativeDays
-            .toDouble(),
-      ),
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return _BandChips<OnsetBand>(
+      options: OnsetBand.values,
+      labelOf: (OnsetBand band) => band.label(l10n),
+      selected: OnsetBand.forDays(value),
+      onSelected: (OnsetBand band) =>
+          onChanged(band.representativeDays.toDouble()),
     );
   }
 }
 
 /// Chips rather than a dropdown: a dropdown opens an overlay that the bottom
 /// bar and the action row can squeeze, hiding options.
-class _BandChips extends StatelessWidget {
+class _BandChips<T> extends StatelessWidget {
   const _BandChips({
-    required this.labels,
+    required this.options,
+    required this.labelOf,
     required this.selected,
     required this.onSelected,
   });
 
-  final List<String> labels;
-  final String selected;
-  final ValueChanged<String> onSelected;
+  final List<T> options;
+  final String Function(T option) labelOf;
+  final T selected;
+  final ValueChanged<T> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -284,11 +283,11 @@ class _BandChips extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: <Widget>[
-        for (final String label in labels)
+        for (final T option in options)
           ChoiceChip(
-            label: Text(label),
-            selected: label == selected,
-            onSelected: (_) => onSelected(label),
+            label: Text(labelOf(option)),
+            selected: option == selected,
+            onSelected: (_) => onSelected(option),
           ),
       ],
     );

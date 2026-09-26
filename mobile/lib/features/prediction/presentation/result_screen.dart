@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_state_views.dart';
@@ -115,8 +114,7 @@ class _NoSideEffectsResult extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'This reflects what you told us today and is not a health '
-                  'check. ${AppConstants.medicalDisclaimer}',
+                  '${l10n.predictionNotAHealthCheck} ${l10n.medicalDisclaimer}',
                   style: theme.textTheme.bodySmall,
                 ),
               ),
@@ -239,7 +237,7 @@ class _Result extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  AppConstants.medicalDisclaimer,
+                  l10n.medicalDisclaimer,
                   style: theme.textTheme.bodySmall,
                 ),
               ),
@@ -260,7 +258,7 @@ class _Result extends ConsumerWidget {
         const SizedBox(height: 12),
         Center(
           child: Text(
-            'Model ${prediction.modelVersion}',
+            l10n.modelVersion(prediction.modelVersion),
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),

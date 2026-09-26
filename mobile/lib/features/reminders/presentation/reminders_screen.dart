@@ -216,6 +216,7 @@ class _ReminderTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final DateTime? next = reminder.nextOccurrence();
 
@@ -278,7 +279,7 @@ class _ReminderTile extends ConsumerWidget {
                       ),
                       if (reminder.enabled && next != null)
                         Text(
-                          'Next ${_relative(next)}',
+                          l10n.remindersNext(_relative(l10n, next)),
                           style: theme.textTheme.bodySmall
                               ?.copyWith(color: AppColors.primary),
                         ),
@@ -301,16 +302,17 @@ class _ReminderTile extends ConsumerWidget {
 
   /// "today at 20:00", "tomorrow at 08:00", or "Thu at 08:00" — easier to act
   /// on than a bare date.
-  static String _relative(DateTime at) {
+  static String _relative(AppLocalizations l10n, DateTime at) {
     final DateTime now = DateTime.now();
     final DateTime today = DateTime(now.year, now.month, now.day);
     final int days = DateTime(at.year, at.month, at.day).difference(today).inDays;
-    final String time = DateFormat('HH:mm').format(at);
+    final String time = DateFormat('HH:mm', l10n.localeName).format(at);
 
     return switch (days) {
-      0 => 'today at $time',
-      1 => 'tomorrow at $time',
-      _ => '${DateFormat('EEE').format(at)} at $time',
+      0 => l10n.remindersTodayAt(time),
+      1 => l10n.remindersTomorrowAt(time),
+      _ => l10n.remindersDayAt(
+          DateFormat('EEE', l10n.localeName).format(at), time),
     };
   }
 }

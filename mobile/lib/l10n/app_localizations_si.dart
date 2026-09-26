@@ -412,4 +412,170 @@ class AppLocalizationsSi extends AppLocalizations {
   @override
   String get trendsATrendNeedsAt =>
       'ප්‍රවණතාවක් සඳහා සැසඳීමට අවම වශයෙන් තක්සේරු දෙකක් අවශ්‍ය වේ. ඔබගේ අවදානම වෙනස් වන ආකාරය බැලීමට තවත් එකක් සම්පූර්ණ කරන්න.';
+
+  @override
+  String get durationUnder3Months => 'මාස 3කට අඩු';
+
+  @override
+  String get duration3To6Months => 'මාස 3 සිට 6 දක්වා';
+
+  @override
+  String get duration6To12Months => 'මාස 6 සිට 12 දක්වා';
+
+  @override
+  String get duration1To2Years => 'අවුරුදු 1 සිට 2 දක්වා';
+
+  @override
+  String get durationOver2Years => 'අවුරුදු 2කට වඩා';
+
+  @override
+  String get onsetWithinDays => 'දින කිහිපයක් ඇතුළත';
+
+  @override
+  String get onset1To2Weeks => 'සති 1 සිට 2 දක්වා';
+
+  @override
+  String get onset3To4Weeks => 'සති 3 සිට 4 දක්වා';
+
+  @override
+  String get sleepVeryPoor => 'ඉතා දුර්වල';
+
+  @override
+  String get sleepPoor => 'දුර්වල';
+
+  @override
+  String get sleepFair => 'සාමාන්‍ය';
+
+  @override
+  String get sleepGood => 'හොඳ';
+
+  @override
+  String get sleepVeryGood => 'ඉතා හොඳ';
+
+  @override
+  String get sleepExcellent => 'විශිෂ්ට';
+
+  @override
+  String assessmentMedicineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ඖෂධ $count',
+      one: 'ඖෂධ 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assessmentStepOf(int step, int total) {
+    return 'පියවර $step / $total';
+  }
+
+  @override
+  String assessmentBetween(int low, int high) {
+    return '$low සහ $high අතර';
+  }
+
+  @override
+  String assessmentChooseUpTo(int max) {
+    return 'උපරිම $maxක් තෝරා, එක් එක් එක කෙතරම් දරුණුද යන්න සඳහන් කරන්න.';
+  }
+
+  @override
+  String assessmentShowAllEffects(int count) {
+    return 'සියලු අතුරු ආබාධ පෙන්වන්න (තවත් $count)';
+  }
+
+  @override
+  String historyNothingReportedOn(String date) {
+    return '$date දින කිසිවක් වාර්තා නොවූ බැවින්, එදින සඳහා අවදානම් මට්ටමක් ගණනය නොකෙරිණි.';
+  }
+
+  @override
+  String medicationsChooseEvery(int max) {
+    return 'ඔබ නිතිපතා ගන්නා සියලුම් ඖෂධ, උපරිම $maxක් දක්වා තෝරන්න. පෙන්වා ඇති දෛනික මාත්‍රාව පරීක්ෂා කර, එය ඔබගේ නොවේ නම් වෙනස් කරන්න.';
+  }
+
+  @override
+  String medicationsNoMatch(String query) {
+    return '\"$query\" ට ගැළපෙන ඖෂධයක් නැත.';
+  }
+
+  @override
+  String medicationsMaxAtATime(int max) {
+    return 'එකවර ඖෂධ $maxක් දක්වා තක්සේරු කළ හැක.';
+  }
+
+  @override
+  String get predictionNotAHealthCheck =>
+      'මෙය ඔබ අද අපට පැවසූ දේ පිළිබිඹු කරන අතර සෞඛ්‍ය පරීක්ෂණයක් නොවේ.';
+
+  @override
+  String get medicalDisclaimer =>
+      'QoLGuard රෝග විනිශ්චය නොකරන අතර සෞඛ්‍ය වෘත්තිකයෙකුගේ උපදෙස් වෙනුවට නොවේ. කිසියම් ඖෂධයක් වෙනස් කිරීමට පෙර සැමවිටම ඔබගේ වෛද්‍යවරයා හෝ ඖෂධවේදියා සමඟ සාකච්ඡා කරන්න.';
+
+  @override
+  String remindersNext(String when) {
+    return 'ඊළඟට $when';
+  }
+
+  @override
+  String remindersTodayAt(String time) {
+    return 'අද $timeට';
+  }
+
+  @override
+  String remindersTomorrowAt(String time) {
+    return 'හෙට $timeට';
+  }
+
+  @override
+  String remindersDayAt(String day, String time) {
+    return '$day $timeට';
+  }
+
+  @override
+  String settingsCopiedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'තක්සේරු $countක් පසුරු පුවරුවට පිටපත් කරන ලදී',
+      one: 'තක්සේරු 1ක් පසුරු පුවරුවට පිටපත් කරන ලදී',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String startupLogo(String appName) {
+    return '$appName ලාංඡනය';
+  }
+
+  @override
+  String trendsSummaryLine(int count, String percent) {
+    return 'තක්සේරු $count · ඉහළම $percent%';
+  }
+
+  @override
+  String get stepAboutYouTitle => 'ඔබ ගැන';
+
+  @override
+  String get stepAboutYouSubtitle =>
+      'ඔබගේ විස්තර සහ ඔබ මෙම ඖෂධ කොතරම් කාලයක් සිට ගන්නවාද යන්න';
+
+  @override
+  String get stepSideEffectsTitle => 'Side effects';
+
+  @override
+  String get stepSideEffectsSubtitle =>
+      'The effects you have noticed since starting';
+
+  @override
+  String get stepDailyLifeTitle => 'දෛනික ජීවිතය';
+
+  @override
+  String get stepDailyLifeSubtitle =>
+      'සාමාන්‍ය සතියක් තුළ නින්ද, ක්‍රියාකාරකම් සහ පුරුදු';
+
+  @override
+  String get medicationsSearchByNameOr => 'නම හෝ ඖෂධ වර්ගය අනුව සොයන්න';
 }

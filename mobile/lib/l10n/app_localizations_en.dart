@@ -416,4 +416,176 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get trendsATrendNeedsAt =>
       'A trend needs at least two assessments to compare. Complete another to see how your risk is moving.';
+
+  @override
+  String get durationUnder3Months => 'Less than 3 months';
+
+  @override
+  String get duration3To6Months => '3 to 6 months';
+
+  @override
+  String get duration6To12Months => '6 to 12 months';
+
+  @override
+  String get duration1To2Years => '1 to 2 years';
+
+  @override
+  String get durationOver2Years => 'More than 2 years';
+
+  @override
+  String get onsetWithinDays => 'Within a few days';
+
+  @override
+  String get onset1To2Weeks => '1 to 2 weeks';
+
+  @override
+  String get onset3To4Weeks => '3 to 4 weeks';
+
+  @override
+  String get sleepVeryPoor => 'Very poor';
+
+  @override
+  String get sleepPoor => 'Poor';
+
+  @override
+  String get sleepFair => 'Fair';
+
+  @override
+  String get sleepGood => 'Good';
+
+  @override
+  String get sleepVeryGood => 'Very good';
+
+  @override
+  String get sleepExcellent => 'Excellent';
+
+  @override
+  String assessmentMedicineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medicines',
+      one: '1 medicine',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assessmentStepOf(int step, int total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String assessmentBetween(int low, int high) {
+    return 'Between $low and $high';
+  }
+
+  @override
+  String assessmentChooseUpTo(int max) {
+    return 'Choose up to $max, and say how bad each one is.';
+  }
+
+  @override
+  String assessmentShowAllEffects(int count) {
+    return 'Show all effects ($count more)';
+  }
+
+  @override
+  String historyNothingReportedOn(String date) {
+    return 'Nothing was reported on $date, so no risk level was worked out for that day.';
+  }
+
+  @override
+  String medicationsChooseEvery(int max) {
+    return 'Choose every medicine you take regularly, up to $max. Check the daily dose shown and change it if it is not yours.';
+  }
+
+  @override
+  String medicationsNoMatch(String query) {
+    return 'No medication matches \"$query\".';
+  }
+
+  @override
+  String medicationsMaxAtATime(int max) {
+    return 'You can assess up to $max medicines at a time.';
+  }
+
+  @override
+  String get predictionNotAHealthCheck =>
+      'This reflects what you told us today and is not a health check.';
+
+  @override
+  String get medicalDisclaimer =>
+      'QoLGuard does not diagnose medical conditions and does not replace advice from a healthcare professional. Always consult your doctor or pharmacist before changing any medication.';
+
+  @override
+  String remindersNext(String when) {
+    return 'Next $when';
+  }
+
+  @override
+  String remindersTodayAt(String time) {
+    return 'today at $time';
+  }
+
+  @override
+  String remindersTomorrowAt(String time) {
+    return 'tomorrow at $time';
+  }
+
+  @override
+  String remindersDayAt(String day, String time) {
+    return '$day at $time';
+  }
+
+  @override
+  String settingsCopiedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count assessments copied to the clipboard',
+      one: '1 assessment copied to the clipboard',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String startupLogo(String appName) {
+    return '$appName logo';
+  }
+
+  @override
+  String trendsSummaryLine(int count, String percent) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count assessments',
+      one: '1 assessment',
+    );
+    return '$_temp0 · highest $percent%';
+  }
+
+  @override
+  String get stepAboutYouTitle => 'About you';
+
+  @override
+  String get stepAboutYouSubtitle =>
+      'Your details, and how long you have been on these medicines';
+
+  @override
+  String get stepSideEffectsTitle => 'Side effects';
+
+  @override
+  String get stepSideEffectsSubtitle =>
+      'The effects you have noticed since starting';
+
+  @override
+  String get stepDailyLifeTitle => 'Daily life';
+
+  @override
+  String get stepDailyLifeSubtitle =>
+      'Sleep, activity and habits over a typical week';
+
+  @override
+  String get medicationsSearchByNameOr => 'Search by name or drug class';
 }

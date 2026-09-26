@@ -15,6 +15,7 @@ import '../../medications/domain/medication.dart';
 import '../domain/field_spec.dart';
 import '../domain/symptom_report.dart';
 import 'widgets/schema_field_input.dart';
+import 'option_labels.dart';
 import 'widgets/symptom_selector.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -49,7 +50,7 @@ class AssessmentScreen extends ConsumerWidget {
         title: Text(
           draft.medications.length == 1
               ? draft.medication!.name
-              : '${draft.medications.length} medicines',
+              : l10n.assessmentMedicineCount(draft.medications.length),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -81,6 +82,7 @@ class _Form extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final AssessmentController controller =
         ref.read(assessmentControllerProvider.notifier);
@@ -103,19 +105,19 @@ class _Form extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Step ${draft.stepIndex + 1} of ${AssessmentStep.all.length}',
+                l10n.assessmentStepOf(draft.stepIndex + 1, AssessmentStep.all.length),
                 style: theme.textTheme.labelMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 4),
               Text(
-                draft.step.title,
+                draft.step.title(l10n),
                 style: theme.textTheme.headlineSmall
                     ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
-                draft.step.subtitle,
+                draft.step.subtitle(l10n),
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),

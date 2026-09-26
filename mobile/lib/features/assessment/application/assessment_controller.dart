@@ -4,16 +4,16 @@ import '../../medications/domain/medication.dart';
 import '../domain/field_spec.dart';
 import '../domain/symptom_report.dart';
 
+enum AssessmentStepId { aboutYou, sideEffects, dailyLife }
+
 class AssessmentStep {
   const AssessmentStep({
-    required this.title,
-    required this.subtitle,
+    required this.id,
     required this.fieldNames,
     this.collectsSymptoms = false,
   });
 
-  final String title;
-  final String subtitle;
+  final AssessmentStepId id;
   final List<String> fieldNames;
 
   /// Whether this step also shows the symptom selector.
@@ -21,21 +21,18 @@ class AssessmentStep {
 
   static const List<AssessmentStep> all = <AssessmentStep>[
     AssessmentStep(
-      title: 'About you',
-      subtitle: 'Your details, and how long you have been on these medicines',
+      id: AssessmentStepId.aboutYou,
       fieldNames: <String>['Age', 'Gender', 'Treatment_Duration_Days'],
     ),
     // Side_Effect and Severity are collected by the symptom selector, which can
     // report several at once. Seriousness is derived from severity.
     AssessmentStep(
-      title: 'Side effects',
-      subtitle: 'The effects you have noticed since starting',
+      id: AssessmentStepId.sideEffects,
       fieldNames: <String>['Onset_Days'],
       collectsSymptoms: true,
     ),
     AssessmentStep(
-      title: 'Daily life',
-      subtitle: 'Sleep, activity and habits over a typical week',
+      id: AssessmentStepId.dailyLife,
       fieldNames: <String>[
         'Sleep_Quality',
         'Sleep_Disorders',

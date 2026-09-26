@@ -109,7 +109,7 @@ class SettingsScreen extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      AppConstants.medicalDisclaimer,
+                      l10n.medicalDisclaimer,
                       style: theme.textTheme.bodySmall,
                     ),
                   ),
@@ -132,6 +132,7 @@ class SettingsScreen extends ConsumerWidget {
     List<AssessmentRecord> assessments,
     List<Reminder> reminders,
   ) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final String payload = const JsonEncoder.withIndent('  ').convert(
       <String, dynamic>{
         'exported_at': DateTime.now().toIso8601String(),
@@ -147,8 +148,7 @@ class SettingsScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${assessments.length} assessment'
-          '${assessments.length == 1 ? '' : 's'} copied to the clipboard',
+          l10n.settingsCopiedCount(assessments.length),
         ),
       ),
     );

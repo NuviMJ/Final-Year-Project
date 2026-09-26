@@ -1,18 +1,9 @@
-/// Words for the sleep quality values the model was trained on (4-9).
+/// Faces for the sleep quality values the model was trained on (4-9).
 ///
 /// A bare number scale asks a patient to distinguish 6 from 7, which they
-/// cannot do meaningfully.
+/// cannot do meaningfully. The words are in the presentation layer.
 class SleepQualityScale {
   const SleepQualityScale._();
-
-  static const Map<int, String> labels = <int, String>{
-    4: 'Very poor',
-    5: 'Poor',
-    6: 'Fair',
-    7: 'Good',
-    8: 'Very good',
-    9: 'Excellent',
-  };
 
   static const Map<int, String> faces = <int, String>{
     4: '😞',
@@ -25,10 +16,10 @@ class SleepQualityScale {
 
   static const String fieldName = 'Sleep_Quality';
 
-  static List<int> get values => labels.keys.toList();
+  static List<int> get values => faces.keys.toList();
 
-  static String labelFor(double value) =>
-      labels[value.round().clamp(values.first, values.last)]!;
+  static int levelFor(double value) =>
+      value.round().clamp(values.first, values.last);
 
   /// True when the scale matches the schema's trained range exactly.
   static bool covers(double min, double max) =>
