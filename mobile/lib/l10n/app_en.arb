@@ -221,5 +221,8 @@
   "assessmentCouldNotGetResult": "Could not get a result.",
   "remindersNotificationTitle": "Time for your {medicine}",
   "@remindersNotificationTitle": {"placeholders": {"medicine": {"type": "String"}}},
-  "remindersNotificationBody": "Tap when you have taken it."
+  "remindersNotificationBody": "Tap when you have taken it.",
+
+  "learnArticlesHeading": "Articles",
+  "learnTipsHeading": "Health tips"
 }

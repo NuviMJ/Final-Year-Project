@@ -617,4 +617,10 @@ class AppLocalizationsSi extends AppLocalizations {
 
   @override
   String get remindersNotificationBody => 'ගත් පසු මෙය තට්ටු කරන්න.';
+
+  @override
+  String get learnArticlesHeading => 'ලිපි';
+
+  @override
+  String get learnTipsHeading => 'සෞඛ්‍ය උපදෙස්';
 }

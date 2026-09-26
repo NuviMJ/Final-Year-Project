@@ -1129,6 +1129,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap when you have taken it.'**
   String get remindersNotificationBody;
+
+  /// No description provided for @learnArticlesHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Articles'**
+  String get learnArticlesHeading;
+
+  /// No description provided for @learnTipsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Health tips'**
+  String get learnTipsHeading;
 }
 
 class _AppLocalizationsDelegate

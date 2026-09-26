@@ -627,4 +627,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remindersNotificationBody => 'Tap when you have taken it.';
+
+  @override
+  String get learnArticlesHeading => 'Articles';
+
+  @override
+  String get learnTipsHeading => 'Health tips';
 }

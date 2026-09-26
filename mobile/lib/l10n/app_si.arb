@@ -171,5 +171,7 @@
   "errorServer": "සේවාදායකයට ඉල්ලීම සම්පූර්ණ කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
   "assessmentCouldNotGetResult": "ප්‍රතිඵලයක් ලබා ගත නොහැකි විය.",
   "remindersNotificationTitle": "ඔබගේ {medicine} ගැනීමට කාලයයි",
-  "remindersNotificationBody": "ගත් පසු මෙය තට්ටු කරන්න."
+  "remindersNotificationBody": "ගත් පසු මෙය තට්ටු කරන්න.",
+  "learnArticlesHeading": "ලිපි",
+  "learnTipsHeading": "සෞඛ්‍ය උපදෙස්"
 }
