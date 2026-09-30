@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_state_views.dart';
 import '../../history/data/assessment_store.dart';
+import '../../reminders/data/reminder_store.dart';
 import '../data/health_repository.dart';
 import 'widgets/pulse_line.dart';
 import '../../../l10n/app_localizations.dart';
@@ -68,6 +71,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       // Local storage is opened here rather than lazily, so every screen after
       // the splash can read stored assessments synchronously.
       await ref.read(sharedPreferencesProvider.future);
+      // Also repairs reminders scheduled by an older build at the wrong time.
+      unawaited(ref.read(remindersProvider.notifier).rescheduleAll());
       await ref.read(serviceStatusProvider.future);
     } catch (_) {
       // Rendered by the error branch in build(); nothing to do here.
