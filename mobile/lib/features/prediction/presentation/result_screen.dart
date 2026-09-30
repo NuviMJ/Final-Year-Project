@@ -9,6 +9,9 @@ import '../../assessment/application/assessment_controller.dart';
 import '../data/prediction_repository.dart';
 import '../domain/assessment_outcome.dart';
 import '../domain/prediction.dart';
+import '../../history/data/assessment_store.dart';
+import '../../history/domain/assessment_record.dart';
+import '../../share/report_share.dart';
 import 'prediction_text.dart';
 import 'widgets/result_summary.dart';
 import '../../../l10n/app_localizations.dart';
@@ -24,11 +27,18 @@ class ResultScreen extends ConsumerWidget {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<AssessmentOutcome?> result =
         ref.watch(predictionControllerProvider);
+    // The assessment is saved to history before this screen opens.
+    final AssessmentRecord? saved =
+        ref.watch(assessmentHistoryProvider).firstOrNull;
+    final bool hasResult = result.value?.isEmpty == false;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.predictionYourResult),
         automaticallyImplyLeading: false,
+        actions: <Widget>[
+          if (hasResult && saved != null) ShareReportButton(record: saved),
+        ],
       ),
       body: SafeArea(
         child: result.when(

@@ -7,14 +7,12 @@ import '../../../core/router/app_router.dart';
 import '../../../core/widgets/app_state_views.dart';
 import '../data/assessment_store.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../assessment/domain/duration_band.dart';
-import '../../assessment/domain/onset_band.dart';
-import '../../assessment/domain/sleep_quality_scale.dart';
 import '../../assessment/domain/symptom_report.dart';
 import '../../prediction/domain/prediction.dart';
 import '../domain/assessment_record.dart';
+import 'record_text.dart';
+import '../../share/report_share.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../assessment/presentation/option_labels.dart';
 import '../../../core/localization/model_values.dart';
 
 class PastResultScreen extends ConsumerWidget {
@@ -37,6 +35,9 @@ class PastResultScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.history),
         ),
+        actions: <Widget>[
+          if (record != null) ShareReportButton(record: record),
+        ],
       ),
       body: SafeArea(
         child: record == null
@@ -152,10 +153,10 @@ class _Detail extends StatelessWidget {
                 _GroupTitle(icon: '\u{1F4DD}', title: l10n.historyEverythingElse),
                 for (final MapEntry<String, Object> entry
                     in record.answers.entries)
-                  if (!_hiddenAnswers.contains(entry.key))
+                  if (!hiddenAnswers.contains(entry.key))
                     _Row(
                       label: fieldLabel(l10n, entry.key, humanise(entry.key)),
-                      value: _answerLabel(l10n, entry.key, entry.value),
+                      value: answerLabel(l10n, entry.key, entry.value),
                     ),
               ],
             ),
@@ -195,29 +196,6 @@ class _Detail extends StatelessWidget {
       ],
     );
   }
-}
-
-/// Answers shown elsewhere, or sent to the model but never chosen directly.
-const Set<String> _hiddenAnswers = <String>{
-  'Dosage_mg',
-  'Side_Effect',
-  'Severity',
-  'Seriousness',
-  'Concomitant_Drug_Count',
-};
-
-String _answerLabel(AppLocalizations l10n, String field, Object value) {
-  final double number = value is num ? value.toDouble() : 0;
-  if (value is num && field == DurationBand.fieldName) {
-    return DurationBand.forDays(number).label(l10n);
-  }
-  if (value is num && field == OnsetBand.fieldName) {
-    return OnsetBand.forDays(number).label(l10n);
-  }
-  if (value is num && field == SleepQualityScale.fieldName) {
-    return sleepQualityWithFace(l10n, number);
-  }
-  return valueLabel(l10n, field, value.toString());
 }
 
 class _NoEffectsBanner extends StatelessWidget {

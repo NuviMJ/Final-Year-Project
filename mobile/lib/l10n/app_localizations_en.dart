@@ -970,4 +970,33 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get fieldDosageHelp =>
       'Total daily dose (mg; international units for Insulin)';
+
+  @override
+  String get shareReport => 'Share report';
+
+  @override
+  String get shareAsPdf => 'Share as PDF';
+
+  @override
+  String get shareAsImage => 'Share as image';
+
+  @override
+  String get sharePreparing => 'Preparing report…';
+
+  @override
+  String get shareFailed => 'Could not create the report. Please try again.';
+
+  @override
+  String shareSubject(String date) {
+    return 'QoLGuard report – $date';
+  }
+
+  @override
+  String get reportTitle => 'Quality-of-life assessment report';
+
+  @override
+  String get reportPatientDetails => 'Patient details';
+
+  @override
+  String get reportCreatedWith => 'Created with QoLGuard';
 }

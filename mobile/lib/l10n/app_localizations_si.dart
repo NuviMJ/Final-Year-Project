@@ -958,4 +958,34 @@ class AppLocalizationsSi extends AppLocalizations {
   @override
   String get fieldDosageHelp =>
       'මුලු දෛනික මාත්‍රාව (mg; Insulin සඳහා ජාත්‍යන්තර ඒකක)';
+
+  @override
+  String get shareReport => 'වාර්තාව බෙදා ගන්න';
+
+  @override
+  String get shareAsPdf => 'PDF ලෙස බෙදා ගන්න';
+
+  @override
+  String get shareAsImage => 'රූපයක් ලෙස බෙදා ගන්න';
+
+  @override
+  String get sharePreparing => 'වාර්තාව සකසමින්…';
+
+  @override
+  String get shareFailed =>
+      'වාර්තාව සෑදීම කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.';
+
+  @override
+  String shareSubject(String date) {
+    return 'QoLGuard වාර්තාව – $date';
+  }
+
+  @override
+  String get reportTitle => 'ජීවන තත්ත්ව තක්සේරු වාර්තාව';
+
+  @override
+  String get reportPatientDetails => 'රෝගියාගේ විස්තර';
+
+  @override
+  String get reportCreatedWith => 'QoLGuard මඟින් සකස් කළ';
 }
