@@ -7,6 +7,7 @@ import '../../../core/router/app_router.dart';
 import '../data/assessment_store.dart';
 import '../domain/assessment_record.dart';
 import 'record_text.dart';
+import '../../share/report_share.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/localization/model_values.dart';
 
@@ -105,28 +106,56 @@ class _HistoryTile extends ConsumerWidget {
           ref.read(assessmentHistoryProvider.notifier).remove(record.id),
       child: Card(
         margin: EdgeInsets.zero,
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
           onTap: () => context.go('${AppRoutes.history}/${record.id}'),
-          title: Text(
-            DateFormat('d MMM yyyy, HH:mm').format(record.takenAt),
-            style: theme.textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const SizedBox(height: 2),
-              Text(record.medicinesLabel(l10n)),
-              if (record.sideEffectLabel(l10n).isNotEmpty)
-                Text(
-                  record.sideEffectLabel(l10n),
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 6, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        DateFormat('d MMM yyyy, HH:mm').format(record.takenAt),
+                        style: theme.textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    ShareReportButton(record: record, compact: true),
+                  ],
                 ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              record.medicinesLabel(l10n),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                            if (record.sideEffectLabel(l10n).isNotEmpty)
+                              Text(
+                                record.sideEffectLabel(l10n),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _RiskChip(record: record),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          trailing: _RiskChip(record: record),
         ),
       ),
     );

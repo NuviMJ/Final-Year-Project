@@ -1771,6 +1771,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total daily dose (mg; international units for Insulin)'**
   String get fieldDosageHelp;
+
+  /// No description provided for @shareReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Share report'**
+  String get shareReport;
+
+  /// No description provided for @shareAsPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Share as PDF'**
+  String get shareAsPdf;
+
+  /// No description provided for @shareAsImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Share as image'**
+  String get shareAsImage;
+
+  /// No description provided for @sharePreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing report…'**
+  String get sharePreparing;
+
+  /// No description provided for @shareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the report. Please try again.'**
+  String get shareFailed;
+
+  /// No description provided for @shareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'QoLGuard report – {date}'**
+  String shareSubject(String date);
+
+  /// No description provided for @reportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quality-of-life assessment report'**
+  String get reportTitle;
+
+  /// No description provided for @reportPatientDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient details'**
+  String get reportPatientDetails;
+
+  /// No description provided for @reportCreatedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Created with QoLGuard'**
+  String get reportCreatedWith;
 }
 
 class _AppLocalizationsDelegate

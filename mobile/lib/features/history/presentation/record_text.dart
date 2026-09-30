@@ -1,6 +1,10 @@
 import '../../../l10n/app_localizations.dart';
 import '../../../core/localization/model_values.dart';
+import '../../assessment/domain/duration_band.dart';
+import '../../assessment/domain/onset_band.dart';
+import '../../assessment/domain/sleep_quality_scale.dart';
 import '../../assessment/domain/symptom_report.dart';
+import '../../assessment/presentation/option_labels.dart';
 import '../domain/assessment_record.dart';
 
 extension AssessmentRecordText on AssessmentRecord {
@@ -23,4 +27,27 @@ extension AssessmentRecordText on AssessmentRecord {
             '${valueLabel(l10n, 'Severity', s.severity)}')
         .join(', ');
   }
+}
+
+/// Answers shown elsewhere, or sent to the model but never chosen directly.
+const Set<String> hiddenAnswers = <String>{
+  'Dosage_mg',
+  'Side_Effect',
+  'Severity',
+  'Seriousness',
+  'Concomitant_Drug_Count',
+};
+
+String answerLabel(AppLocalizations l10n, String field, Object value) {
+  final double number = value is num ? value.toDouble() : 0;
+  if (value is num && field == DurationBand.fieldName) {
+    return DurationBand.forDays(number).label(l10n);
+  }
+  if (value is num && field == OnsetBand.fieldName) {
+    return OnsetBand.forDays(number).label(l10n);
+  }
+  if (value is num && field == SleepQualityScale.fieldName) {
+    return sleepQualityWithFace(l10n, number);
+  }
+  return valueLabel(l10n, field, value.toString());
 }

@@ -278,5 +278,14 @@
   "fieldSleepDisordersHelp": "වෛද්‍යවරයෙකු විනිශ්චය කළ නින්දේ ආබාධයක් තිබේ ද?",
   "fieldTreatmentDurationHelp": "මේතාක් මෙම ඖෂධය ගත් දින ගණන",
   "fieldOnsetHelp": "ඖෂධය පටන් ගත් දින සිට අතුරු ආබාධ ඇති වූ දක්වා දින ගණන",
-  "fieldDosageHelp": "මුලු දෛනික මාත්‍රාව (mg; Insulin සඳහා ජාත්‍යන්තර ඒකක)"
+  "fieldDosageHelp": "මුලු දෛනික මාත්‍රාව (mg; Insulin සඳහා ජාත්‍යන්තර ඒකක)",
+  "shareReport": "වාර්තාව බෙදා ගන්න",
+  "shareAsPdf": "PDF ලෙස බෙදා ගන්න",
+  "shareAsImage": "රූපයක් ලෙස බෙදා ගන්න",
+  "sharePreparing": "වාර්තාව සකසමින්…",
+  "shareFailed": "වාර්තාව සෑදීම කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+  "shareSubject": "QoLGuard වාර්තාව – {date}",
+  "reportTitle": "ජීවන තත්ත්ව තක්සේරු වාර්තාව",
+  "reportPatientDetails": "රෝගියාගේ විස්තර",
+  "reportCreatedWith": "QoLGuard මඟින් සකස් කළ"
 }

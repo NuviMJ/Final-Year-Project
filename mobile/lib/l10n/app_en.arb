@@ -330,5 +330,16 @@
   "fieldSleepDisordersHelp": "Diagnosed sleep disorder",
   "fieldTreatmentDurationHelp": "Days on this medication so far",
   "fieldOnsetHelp": "Days from starting the drug until the side effect appeared",
-  "fieldDosageHelp": "Total daily dose (mg; international units for Insulin)"
+  "fieldDosageHelp": "Total daily dose (mg; international units for Insulin)",
+
+  "shareReport": "Share report",
+  "shareAsPdf": "Share as PDF",
+  "shareAsImage": "Share as image",
+  "sharePreparing": "Preparing report…",
+  "shareFailed": "Could not create the report. Please try again.",
+  "shareSubject": "QoLGuard report – {date}",
+  "@shareSubject": {"placeholders": {"date": {"type": "String"}}},
+  "reportTitle": "Quality-of-life assessment report",
+  "reportPatientDetails": "Patient details",
+  "reportCreatedWith": "Created with QoLGuard"
 }
