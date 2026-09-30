@@ -779,7 +779,7 @@ class AppLocalizationsSi extends AppLocalizations {
   String get riskHigh => 'ඉහළ';
 
   @override
-  String get sideEffectAbdominalPain => 'බඩ වේදනාව';
+  String get sideEffectAbdominalPain => 'උදරය වේදනාව';
 
   @override
   String get sideEffectAnxiety => 'කාංසාව';
