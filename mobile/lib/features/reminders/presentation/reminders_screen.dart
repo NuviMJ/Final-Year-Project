@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,10 +28,20 @@ class RemindersScreen extends ConsumerStatefulWidget {
 class _RemindersScreenState extends ConsumerState<RemindersScreen> {
   bool? _notificationsAllowed;
 
+  late final Timer _clock;
+
   @override
   void initState() {
     super.initState();
+    // Moves each "Next …" line on once its time has passed.
+    _clock = Timer.periodic(const Duration(minutes: 1), (_) => setState(() {}));
     _checkPermission();
+  }
+
+  @override
+  void dispose() {
+    _clock.cancel();
+    super.dispose();
   }
 
   Future<void> _checkPermission() async {

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -28,9 +29,10 @@ class NotificationService {
   Future<void> initialise() async {
     if (!isSupported || _ready) return;
 
-    // Local timezone matters: scheduling in raw UTC drifts by an hour when
-    // daylight saving changes, so an 08:00 reminder would start firing at 07:00.
+    // Without this tz.local stays UTC, so an 08:00 reminder fires at 13:30 in
+    // Sri Lanka.
     tz_data.initializeTimeZones();
+    tz.setLocalLocation(await _deviceLocation());
 
     await _plugin.initialize(
       settings: const InitializationSettings(
@@ -39,6 +41,21 @@ class NotificationService {
     );
 
     _ready = true;
+  }
+
+  /// The phone's timezone, or failing that any zone with the same UTC offset.
+  static Future<tz.Location> _deviceLocation() async {
+    try {
+      final TimezoneInfo info = await FlutterTimezone.getLocalTimezone();
+      return tz.getLocation(info.identifier);
+    } catch (_) {
+      final Duration offset = DateTime.now().timeZoneOffset;
+      return tz.timeZoneDatabase.locations.values.firstWhere(
+        (tz.Location location) =>
+            location.currentTimeZone.offset == offset.inMilliseconds,
+        orElse: () => tz.UTC,
+      );
+    }
   }
 
   /// Asks for permission to post notifications.
